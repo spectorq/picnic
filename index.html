@@ -1,0 +1,5409 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="black">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#08080A" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Picnic — видеозвонки без регистрации</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://esm.sh" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg-base: #08080A;
+      --bg-glow: #19191E;
+      --bg-surface: #121215;
+      --bg-elevated: #1A1A1F;
+      --bg-glass: rgba(18, 18, 22, 0.78);
+      --bg-glass-strong: rgba(14, 14, 17, 0.92);
+      --border-subtle: rgba(255, 255, 255, 0.09);
+      --border-strong: rgba(255, 255, 255, 0.18);
+      --text-primary: #F5F5F7;
+      --text-secondary: #9898A0;
+      --text-muted: #5E5E66;
+      --accent: #FFFFFF;
+      --accent-hover: #E5E5EA;
+      --accent-fg: #08080A;
+      --accent-soft: rgba(255, 255, 255, 0.12);
+      --accent-border: rgba(255, 255, 255, 0.34);
+      --danger: #E5484D;
+      --danger-hover: #F2555A;
+      --ok: #34D399;
+      --warn: #FBBF24;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+      --radius-pill: 9999px;
+      --font-main: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+    }
+
+    html[data-theme="green"] {
+      --bg-glow: #0D2618;
+      --accent: #2FD07A;
+      --accent-hover: #45DE8C;
+      --accent-fg: #04170C;
+      --accent-soft: rgba(47, 208, 122, 0.16);
+      --accent-border: rgba(47, 208, 122, 0.45);
+    }
+
+    html[data-theme="yellow"] {
+      --bg-glow: #261F09;
+      --accent: #F5C431;
+      --accent-hover: #FFD24A;
+      --accent-fg: #171202;
+      --accent-soft: rgba(245, 196, 49, 0.16);
+      --accent-border: rgba(245, 196, 49, 0.45);
+    }
+
+    html[data-theme="blue"] {
+      --bg-glow: #0D1B30;
+      --accent: #3B82F6;
+      --accent-hover: #60A5FA;
+      --accent-fg: #FFFFFF;
+      --accent-soft: rgba(59, 130, 246, 0.18);
+      --accent-border: rgba(59, 130, 246, 0.48);
+    }
+
+    html[data-theme="red"] {
+      --bg-glow: #2B1013;
+      --accent: #EF4444;
+      --accent-hover: #F87171;
+      --accent-fg: #FFFFFF;
+      --accent-soft: rgba(239, 68, 68, 0.18);
+      --accent-border: rgba(239, 68, 68, 0.48);
+    }
+
+    html[data-theme="purple"] {
+      --bg-glow: #1F112E;
+      --accent: #A855F7;
+      --accent-hover: #C084FC;
+      --accent-fg: #FFFFFF;
+      --accent-soft: rgba(168, 85, 247, 0.18);
+      --accent-border: rgba(168, 85, 247, 0.48);
+    }
+
+    html[data-theme="rose"] {
+      --bg-glow: #29101F;
+      --accent: #EC4899;
+      --accent-hover: #F472B6;
+      --accent-fg: #FFFFFF;
+      --accent-soft: rgba(236, 72, 153, 0.18);
+      --accent-border: rgba(236, 72, 153, 0.48);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      font-family: var(--font-main);
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+      color: inherit;
+      outline: none;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* ================= VIEWS (HOME & LOBBY) ================= */
+    .screen {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: calc(20px + var(--safe-top)) calc(20px + var(--safe-right)) calc(20px + var(--safe-bottom)) calc(20px + var(--safe-left));
+      background: radial-gradient(circle at 50% 0%, var(--bg-glow) 0%, var(--bg-base) 68%);
+      overflow-y: auto;
+      transition: background 0.35s ease;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 26px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      background: var(--accent);
+      color: var(--accent-fg);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    .brand-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    h1, h2 {
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .desc {
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--text-secondary);
+      margin-bottom: 22px;
+    }
+
+    .btn {
+      width: 100%;
+      height: 48px;
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      transition: transform 0.14s ease, background-color 0.18s ease, opacity 0.18s ease;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: scale(0.985);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--accent-fg);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #232329;
+      border-color: var(--border-strong);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      height: 36px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .btn-ghost:hover {
+      color: var(--text-primary);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 18px 0;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-subtle);
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .input-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .input, .select-input {
+      width: 100%;
+      height: 45px;
+      padding: 0 14px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-base);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 14.5px;
+      transition: border-color 0.18s ease;
+    }
+
+    .input:focus, .select-input:focus {
+      border-color: var(--accent-border);
+    }
+
+    .input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .select-input {
+      cursor: pointer;
+    }
+
+    .input-shake {
+      animation: shake 0.35s ease;
+      border-color: var(--danger) !important;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+
+    .row-gap {
+      display: flex;
+      gap: 10px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .feature-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .pill-info {
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+    }
+
+    /* Theme Picker Swatches */
+    .theme-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .theme-row-label {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+    }
+
+    .theme-swatches {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: nowrap;
+    }
+
+    .theme-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.22);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .lobby-card {
+      position: relative;
+    }
+
+    .lobby-hdr-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .lobby-menu {
+      position: absolute;
+      top: 64px;
+      right: 20px;
+      width: min(276px, calc(100% - 40px));
+      background: rgba(20, 20, 26, 0.96);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      border: 1px solid var(--border-strong);
+      border-radius: 18px;
+      padding: 8px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.78);
+      z-index: 20;
+    }
+
+    .qr-box {
+      background: #FFFFFF;
+      padding: 14px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+      width: fit-content;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    }
+
+    .qr-box canvas {
+      display: block;
+      width: 208px;
+      height: 208px;
+    }
+
+    .qr-scanner-view {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #000;
+      border: 1px solid var(--border-strong);
+      margin-bottom: 12px;
+    }
+
+    .qr-scanner-view video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .qr-scanner-frame {
+      position: absolute;
+      inset: 18%;
+      border: 2px solid var(--accent);
+      border-radius: 16px;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.42);
+      pointer-events: none;
+    }
+
+    .check-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 12.5px;
+      line-height: 1.45;
+      color: var(--text-secondary);
+      margin: 6px 0 4px;
+      cursor: pointer;
+    }
+
+    .check-row input {
+      width: 17px;
+      height: 17px;
+      margin-top: 2px;
+      accent-color: var(--accent);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .reconnect-pill {
+      position: fixed;
+      top: calc(56px + var(--safe-top));
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 7px 14px;
+      border-radius: var(--radius-pill);
+      background: rgba(24, 24, 30, 0.92);
+      border: 1px solid var(--warn);
+      color: var(--warn);
+      font-size: 12.5px;
+      font-weight: 500;
+      z-index: 45;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
+    }
+
+    .theme-dot:hover {
+      transform: scale(1.12);
+    }
+
+    .theme-dot.active {
+      border-color: #FFFFFF;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.32);
+      transform: scale(1.12);
+    }
+
+    /* ================= LOBBY ================= */
+    .lobby-card {
+      max-width: 500px;
+    }
+
+    .lobby-preview {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      background: #1B1B20;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 16px;
+    }
+
+    .lobby-preview video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+      transition: opacity 0.2s ease;
+    }
+
+    .lobby-preview.no-mirror video {
+      transform: none;
+    }
+
+    .cam-off-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 35%, #282832 0%, #19191F 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px;
+      text-align: center;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .avatar-circle {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      border: 1.5px solid var(--accent-border);
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .cam-off-text {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .preview-controls {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      z-index: 4;
+    }
+
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(18, 18, 22, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-strong);
+      color: var(--text-primary);
+      display: grid;
+      place-items: center;
+      transition: background-color 0.18s ease, transform 0.14s ease, border-color 0.18s ease, box-shadow 0.15s ease;
+    }
+
+    .icon-btn:hover {
+      background: rgba(40, 40, 48, 0.92);
+    }
+
+    .icon-btn:active {
+      transform: scale(0.94);
+    }
+
+    .icon-btn.off {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: #fff;
+    }
+
+    .icon-btn.mic-live-ring {
+      box-shadow: 0 0 0 4px var(--accent-soft), 0 0 0 1.5px var(--accent);
+    }
+
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 14px;
+      font-size: 13px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .status-dot.live {
+      background: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+
+    .status-dot.checking {
+      background: var(--accent);
+      animation: pulse 1.2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.35; }
+      50% { opacity: 1; }
+    }
+
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-primary);
+      min-width: 0;
+    }
+
+    .status-text-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .status-sub {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ================= CALL STAGE ================= */
+    #callScreen {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100dvh;
+      background: #050506;
+      overflow: hidden;
+    }
+
+    /* Fullscreen / Pure Video Auto-hide */
+    #callScreen.ui-hidden .top-bar,
+    #callScreen.ui-hidden .bottom-dock,
+    #callScreen.ui-hidden .chat-pill-collapsed,
+    #callScreen.ui-hidden .dock-restore-btn,
+    #callScreen.ui-hidden .tile-pin-hint {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #callScreen.ui-hidden .top-bar {
+      transform: translateY(-16px);
+    }
+
+    #callScreen.ui-hidden .bottom-dock {
+      transform: translate(-50%, 24px);
+    }
+
+    #callScreen.ui-hidden {
+      cursor: none;
+    }
+
+    /* Video Grid Stage */
+    #videoStage {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      /* Safe padding in grid mode so top pill & bottom dock NEVER overlap names or faces */
+      padding: calc(58px + var(--safe-top)) calc(10px + var(--safe-right)) calc(88px + var(--safe-bottom)) calc(10px + var(--safe-left));
+      display: grid;
+      gap: 8px;
+      align-content: stretch;
+      justify-content: stretch;
+      transition: padding 0.25s ease;
+    }
+
+    #callScreen.dock-collapsed #videoStage:not(.stage-immersion) {
+      padding-bottom: calc(28px + var(--safe-bottom));
+    }
+
+    /* Immersion / 1-on-1 / Pinned full-bleed layout */
+    #videoStage.stage-immersion {
+      padding: 0 !important;
+      gap: 0 !important;
+      display: block !important;
+    }
+
+    .video-tile {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      min-width: 0;
+      background: #17171C;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1.5px solid rgba(255, 255, 255, 0.08);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, border-radius 0.25s ease;
+      cursor: pointer;
+    }
+
+    .video-tile.speaking {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent-border);
+    }
+
+    .video-tile.speaking .avatar-circle {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 5px var(--accent-soft);
+      transform: scale(1.04);
+    }
+
+    .video-tile.pinned {
+      position: absolute !important;
+      inset: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      border-radius: 0 !important;
+      border: none !important;
+      z-index: 1;
+    }
+
+    /* IMPORTANT: Never display:none <video> during call so audio/decoder never pause on iOS/Chrome */
+    .video-tile video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      background: #121216;
+      transition: opacity 0.2s ease;
+    }
+
+    .video-tile video.cam-hidden-vid {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .video-tile.contain-fit video {
+      object-fit: contain;
+      background: #050506;
+    }
+
+    .video-tile.mirror video {
+      transform: scaleX(-1);
+    }
+
+    /* Compact & Crowded grid modes for 5-10 people */
+    #videoStage.stage-compact .video-tile {
+      border-radius: 14px;
+    }
+    #videoStage.stage-compact .avatar-circle {
+      width: 48px;
+      height: 48px;
+      font-size: 19px;
+    }
+    #videoStage.stage-compact .cam-off-text {
+      display: none;
+    }
+    #videoStage.stage-compact .tile-badge {
+      padding: 3px 8px;
+      font-size: 11px;
+      left: 6px;
+      bottom: 6px;
+    }
+
+    #videoStage.stage-crowded {
+      gap: 6px;
+    }
+    #videoStage.stage-crowded .video-tile {
+      border-radius: 12px;
+    }
+    #videoStage.stage-crowded .avatar-circle {
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+    }
+    #videoStage.stage-crowded .cam-off-text {
+      display: none;
+    }
+    #videoStage.stage-crowded .tile-badge {
+      padding: 2px 7px;
+      font-size: 10.5px;
+      left: 5px;
+      bottom: 5px;
+      max-width: calc(100% - 10px);
+    }
+
+    /* Thumbnail strip when someone is pinned in a group call */
+    #pinnedStrip {
+      position: absolute;
+      top: calc(62px + var(--safe-top));
+      right: calc(12px + var(--safe-right));
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 6;
+      max-height: calc(100dvh - 170px);
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+
+    #pinnedStrip::-webkit-scrollbar {
+      display: none;
+    }
+
+    #pinnedStrip .video-tile {
+      width: 136px;
+      height: 94px;
+      flex-shrink: 0;
+      border-radius: 14px;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
+    }
+
+    #pinnedStrip .avatar-circle {
+      width: 36px;
+      height: 36px;
+      font-size: 14px;
+    }
+
+    #pinnedStrip .cam-off-text {
+      display: none;
+    }
+
+    #pinnedStrip .tile-badge {
+      left: 5px;
+      bottom: 5px;
+      padding: 2px 7px;
+      font-size: 10.5px;
+      max-width: calc(100% - 10px);
+    }
+
+    @media (max-width: 640px) {
+      #pinnedStrip .video-tile {
+        width: 88px;
+        height: 118px;
+      }
+    }
+
+    /* Self Floating PiP (used in 1-on-1 Focus mode) */
+    .video-tile.self-pip {
+      position: fixed;
+      top: calc(62px + var(--safe-top));
+      right: calc(12px + var(--safe-right));
+      width: 126px;
+      height: 174px;
+      z-index: 8;
+      border-radius: 16px;
+      border: 1.5px solid rgba(255, 255, 255, 0.24);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65);
+    }
+
+    .video-tile.self-pip .avatar-circle {
+      width: 44px;
+      height: 44px;
+      font-size: 18px;
+    }
+
+    .video-tile.self-pip .cam-off-text {
+      display: none;
+    }
+
+    /* Keep self-pip clean: hide name text on tiny self preview, only show mic muted dot if muted */
+    .video-tile.self-pip .tile-badge {
+      left: 6px;
+      bottom: 6px;
+      padding: 4px;
+    }
+    .video-tile.self-pip .tile-badge.mic-ok {
+      display: none;
+    }
+    .video-tile.self-pip .tile-name {
+      display: none;
+    }
+
+    @media (min-width: 768px) {
+      .video-tile.self-pip {
+        width: 204px;
+        height: 128px;
+      }
+    }
+
+    #callScreen.ui-hidden .video-tile.self-pip.auto-hide-pip {
+      opacity: 0.2;
+    }
+
+    /* Name Badge inside tile */
+    .tile-badge {
+      position: absolute;
+      left: 10px;
+      bottom: 10px;
+      max-width: calc(100% - 20px);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 11px;
+      border-radius: var(--radius-pill);
+      background: rgba(10, 10, 14, 0.72);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-primary);
+      z-index: 4;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    /* FIXED ("намертво") Name Badge position on full-bleed / pinned tile: top-left directly under the timer pill! */
+    #videoStage.stage-immersion .video-tile.pinned .tile-badge {
+      top: calc(58px + var(--safe-top));
+      left: calc(12px + var(--safe-left));
+      bottom: auto;
+      max-width: calc(100vw - 170px);
+    }
+
+    .tile-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .mic-muted-dot {
+      color: var(--danger);
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    /* Connection Status inside tile */
+    .tile-conn-status {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 4px 9px;
+      border-radius: var(--radius-pill);
+      background: rgba(12, 12, 16, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 11px;
+      color: var(--warn);
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    #videoStage.stage-immersion .video-tile.pinned .tile-conn-status {
+      top: calc(92px + var(--safe-top));
+      left: calc(12px + var(--safe-left));
+    }
+
+    .tile-pin-hint {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 4px 8px;
+      border-radius: var(--radius-pill);
+      background: rgba(10, 10, 14, 0.68);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 11px;
+      color: var(--text-secondary);
+      z-index: 4;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+    }
+
+    .video-tile:hover .tile-pin-hint {
+      opacity: 1;
+    }
+
+    #videoStage.stage-immersion .video-tile.pinned .tile-pin-hint {
+      top: calc(58px + var(--safe-top));
+      right: auto;
+      left: calc(12px + var(--safe-left));
+      margin-top: 32px;
+    }
+
+    /* Waiting room empty state inside call */
+    #waitingOverlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .waiting-box {
+      pointer-events: auto;
+      background: rgba(16, 16, 20, 0.84);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 22px 24px;
+      max-width: 340px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+    }
+
+    .waiting-box h3 {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .waiting-box p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    /* ================= TOP BAR & HAMBURGER MENU ================= */
+    .top-bar {
+      position: fixed;
+      top: calc(10px + var(--safe-top));
+      left: calc(10px + var(--safe-left));
+      right: calc(10px + var(--safe-right));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      z-index: 22;
+      transition: opacity 0.26s ease, transform 0.26s ease;
+      pointer-events: none;
+    }
+
+    .top-pill {
+      pointer-events: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 38px;
+      padding: 0 13px;
+      border-radius: var(--radius-pill);
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .top-actions {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .circle-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      display: grid;
+      place-items: center;
+      transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.14s ease;
+    }
+
+    .circle-btn:hover {
+      background: rgba(38, 38, 46, 0.9);
+      border-color: var(--border-strong);
+    }
+
+    .circle-btn:active {
+      transform: scale(0.94);
+    }
+
+    .circle-btn.active {
+      background: var(--accent);
+      color: var(--accent-fg);
+      border-color: var(--accent);
+    }
+
+    /* Dropdown Side Menu (matches screenshot!) */
+    .side-menu {
+      position: fixed;
+      top: calc(56px + var(--safe-top));
+      right: calc(10px + var(--safe-right));
+      width: min(296px, calc(100vw - 20px));
+      background: rgba(20, 20, 25, 0.92);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--border-strong);
+      border-radius: 20px;
+      padding: 8px;
+      box-shadow: 0 22px 55px rgba(0, 0, 0, 0.75);
+      z-index: 28;
+      transform-origin: top right;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+
+    .side-menu.hidden {
+      display: none !important;
+    }
+
+    .menu-item {
+      width: 100%;
+      min-height: 44px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.15s ease;
+      text-align: left;
+    }
+
+    .menu-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .menu-item-left {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+    }
+
+    .menu-item-left svg {
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .menu-item-val {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      font-weight: 400;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .menu-divider {
+      height: 1px;
+      background: var(--border-subtle);
+      margin: 6px 10px;
+    }
+
+    .menu-theme-box {
+      padding: 8px 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .menu-theme-title {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* ================= BOTTOM DOCK + COLLAPSE ================= */
+    .bottom-dock {
+      position: fixed;
+      bottom: calc(16px + var(--safe-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: var(--radius-pill);
+      background: var(--bg-glass-strong);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+      z-index: 25;
+      max-width: calc(100vw - 16px);
+      transition: opacity 0.26s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    #callScreen.dock-collapsed .bottom-dock {
+      transform: translate(-50%, calc(100% + 44px + var(--safe-bottom)));
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .dock-btn {
+      position: relative;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      transition: background-color 0.18s ease, transform 0.14s ease, color 0.18s ease;
+    }
+
+    .dock-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    .dock-btn:active {
+      transform: scale(0.93);
+    }
+
+    .dock-btn.off {
+      background: var(--danger);
+      color: #FFFFFF;
+    }
+
+    .dock-btn.active {
+      background: var(--accent);
+      color: var(--accent-fg);
+    }
+
+    .dock-btn.end-call {
+      width: 56px;
+      border-radius: var(--radius-pill);
+      background: var(--danger);
+      color: #FFFFFF;
+    }
+
+    .dock-btn.end-call:hover {
+      background: var(--danger-hover);
+    }
+
+    .dock-btn.collapse-btn {
+      width: 36px;
+      height: 40px;
+      background: transparent;
+      color: var(--text-secondary);
+    }
+
+    .dock-btn.collapse-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+    }
+
+    .dock-restore-btn {
+      position: fixed;
+      bottom: calc(8px + var(--safe-bottom));
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      height: 30px;
+      padding: 0 18px;
+      border-radius: var(--radius-pill);
+      background: var(--bg-glass-strong);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-strong);
+      color: var(--text-primary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 25;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    }
+
+    #callScreen.dock-collapsed .dock-restore-btn {
+      opacity: 0.9;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    @media (max-width: 420px) {
+      .bottom-dock {
+        gap: 6px;
+        padding: 6px 8px;
+      }
+      .dock-btn {
+        width: 42px;
+        height: 42px;
+      }
+      .dock-btn.end-call {
+        width: 50px;
+      }
+      .dock-btn.collapse-btn {
+        width: 32px;
+      }
+    }
+
+    .badge-count {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: var(--radius-pill);
+      background: var(--accent);
+      color: var(--accent-fg);
+      font-size: 11px;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+    }
+
+    /* ================= CHAT WIDGET (CORNER + FULLSCREEN OVERLAY) ================= */
+    #chatWidget {
+      position: fixed;
+      right: calc(12px + var(--safe-right));
+      bottom: calc(82px + var(--safe-bottom));
+      z-index: 32;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      transition: bottom 0.25s ease;
+    }
+
+    #callScreen.dock-collapsed #chatWidget {
+      bottom: calc(46px + var(--safe-bottom));
+    }
+
+    .chat-pill-collapsed {
+      height: 38px;
+      padding: 0 14px;
+      border-radius: var(--radius-pill);
+      background: var(--bg-glass-strong);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+      transition: opacity 0.25s ease, background-color 0.18s ease;
+    }
+
+    .chat-pill-collapsed:hover {
+      background: rgba(34, 34, 42, 0.94);
+      border-color: var(--border-strong);
+    }
+
+    .chat-panel {
+      width: min(340px, calc(100vw - 24px));
+      height: min(390px, 50dvh);
+      background: rgba(16, 16, 20, 0.9);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--border-strong);
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 22px 55px rgba(0, 0, 0, 0.78);
+      transition: width 0.22s ease, height 0.22s ease, border-radius 0.22s ease;
+    }
+
+    /* Fullscreen chat overlay WITHOUT touching or pausing video elements underneath */
+    #chatWidget.chat-fullscreen {
+      inset: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      padding: calc(10px + var(--safe-top)) calc(10px + var(--safe-right)) calc(10px + var(--safe-bottom)) calc(10px + var(--safe-left));
+      background: rgba(6, 6, 9, 0.62);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      align-items: center;
+      justify-content: center;
+    }
+
+    #chatWidget.chat-fullscreen .chat-panel {
+      width: 100%;
+      max-width: 720px;
+      height: 100%;
+      border-radius: 20px;
+      background: rgba(14, 14, 18, 0.92);
+    }
+
+    .chat-header {
+      height: 44px;
+      padding: 0 10px 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
+    }
+
+    .chat-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .chat-header-btns {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .chat-hdr-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      display: grid;
+      place-items: center;
+    }
+
+    .chat-hdr-btn:hover {
+      background: rgba(255, 255, 255, 0.09);
+      color: var(--text-primary);
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      user-select: text;
+    }
+
+    .chat-messages::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.16);
+      border-radius: 4px;
+    }
+
+    .chat-empty {
+      margin: auto;
+      text-align: center;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      padding: 16px;
+      line-height: 1.5;
+    }
+
+    .chat-sys {
+      text-align: center;
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      padding: 3px 9px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      align-self: center;
+    }
+
+    .chat-msg {
+      display: flex;
+      flex-direction: column;
+      max-width: 86%;
+      align-self: flex-start;
+      transition: transform 0.2s ease;
+    }
+
+    .chat-msg.mine {
+      align-self: flex-end;
+      align-items: flex-end;
+    }
+
+    .chat-msg.msg-highlight .chat-msg-bubble {
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+
+    .chat-msg-meta {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-bottom: 3px;
+      padding: 0 4px;
+    }
+
+    .chat-msg-bubble {
+      position: relative;
+      padding: 8px 11px;
+      border-radius: 14px;
+      font-size: 13.5px;
+      line-height: 1.42;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+      word-break: break-word;
+      white-space: pre-wrap;
+      cursor: pointer;
+    }
+
+    .chat-msg.mine .chat-msg-bubble {
+      background: var(--accent);
+      color: var(--accent-fg);
+    }
+
+    .chat-msg-bubble.has-photo {
+      padding: 6px;
+      cursor: default;
+    }
+
+    /* Quoted Reply inside message */
+    .chat-quote {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 8px;
+      margin-bottom: 5px;
+      border-left: 2.5px solid var(--accent);
+      background: rgba(0, 0, 0, 0.24);
+      border-radius: 7px;
+      font-size: 11.5px;
+      cursor: pointer;
+      max-width: 100%;
+    }
+
+    .chat-msg.mine .chat-quote {
+      border-left-color: var(--accent-fg);
+      background: rgba(0, 0, 0, 0.14);
+    }
+
+    .chat-quote-thumb {
+      width: 26px;
+      height: 26px;
+      border-radius: 5px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .chat-quote-body {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-quote-sender {
+      font-weight: 600;
+      font-size: 11px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-quote-text {
+      opacity: 0.84;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Square 1:1 Photo Thumbnail inside chat */
+    .chat-photo-wrap {
+      position: relative;
+      width: 176px;
+      max-width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 10px;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.35);
+      cursor: zoom-in;
+    }
+
+    #chatWidget.chat-fullscreen .chat-photo-wrap {
+      width: 220px;
+    }
+
+    .chat-photo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .chat-photo-progress {
+      position: absolute;
+      inset: 0;
+      background: rgba(8, 8, 12, 0.68);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .chat-photo-reply-btn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(12, 12, 16, 0.72);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .chat-photo-caption {
+      padding: 6px 5px 2px;
+      font-size: 13px;
+      line-height: 1.38;
+      cursor: pointer;
+    }
+
+    /* Reply & Photo Mini-Preview Bars above Chat Input */
+    .chat-compose-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-top: 1px solid var(--border-subtle);
+      font-size: 12px;
+    }
+
+    .chat-compose-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .chat-compose-line {
+      width: 3px;
+      height: 28px;
+      border-radius: 3px;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .chat-compose-thumb {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 1px solid var(--border-strong);
+    }
+
+    .chat-compose-info {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .chat-compose-title {
+      font-weight: 600;
+      color: var(--accent);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-compose-sub {
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-compose-close {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      color: var(--text-secondary);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .chat-compose-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+    }
+
+    .chat-form {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px;
+      border-top: 1px solid var(--border-subtle);
+      background: rgba(8, 8, 10, 0.55);
+      flex-shrink: 0;
+    }
+
+    .chat-attach-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      transition: background-color 0.15s ease;
+    }
+
+    .chat-attach-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    .chat-input {
+      flex: 1;
+      height: 36px;
+      padding: 0 12px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid transparent;
+      color: var(--text-primary);
+      font-size: 13.5px;
+      min-width: 0;
+    }
+
+    .chat-input:focus {
+      border-color: var(--accent-border);
+    }
+
+    .chat-send-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--accent-fg);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .chat-send-btn:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    /* ================= FULLSCREEN PHOTO LIGHTBOX ================= */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 4, 6, 0.94);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      padding: calc(12px + var(--safe-top)) calc(12px + var(--safe-right)) calc(16px + var(--safe-bottom)) calc(12px + var(--safe-left));
+    }
+
+    .lightbox-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-shrink: 0;
+      margin-bottom: 10px;
+    }
+
+    .lightbox-meta {
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lightbox-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .lightbox-btn {
+      height: 36px;
+      padding: 0 13px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .lightbox-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .lightbox-btn.primary {
+      background: var(--accent);
+      color: var(--accent-fg);
+    }
+
+    .lightbox-stage {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 10px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+    }
+
+    /* ================= TOASTS & MODALS ================= */
+    #toastStack {
+      position: fixed;
+      top: calc(58px + var(--safe-top));
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      z-index: 55;
+      pointer-events: none;
+      width: min(92vw, 380px);
+    }
+
+    .toast {
+      padding: 9px 15px;
+      border-radius: var(--radius-pill);
+      background: rgba(24, 24, 29, 0.94);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border-strong);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+      animation: toastIn 0.22s ease forwards;
+      text-align: center;
+    }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 50;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 390px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75);
+    }
+
+    .modal-title {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== 1. HOME SCREEN ==================== -->
+  <section id="homeScreen" class="screen">
+    <div class="card">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 7l-7 5 7 5V7z"></path>
+            <rect x="1" y="5" width="15" height="14" rx="3" ry="3"></rect>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">Picnic</div>
+          <div class="brand-sub">Видеозвонки без регистрации</div>
+        </div>
+      </div>
+
+      <p class="desc">
+        Создайте личную комнату и отправьте ссылку близким или друзьям. Без аккаунтов, без рекламы и без сохранения звонков на серверах.
+      </p>
+
+      <button id="createRoomBtn" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Создать видеозвонок
+      </button>
+
+      <div class="divider">или войти по ссылке / коду</div>
+
+      <div class="row-gap">
+        <input id="joinCodeInput" class="input" type="text" placeholder="Ссылка или код комнаты" autocomplete="off" />
+        <button id="scanQrBtn" class="btn btn-secondary" style="width: 46px; padding: 0; flex-shrink: 0;" title="Сканировать QR-код">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+            <path d="M14 14h3v3h-3z"></path>
+            <path d="M20 14v3h-3"></path>
+            <path d="M14 20h3v1"></path>
+            <path d="M20 20h1v1"></path>
+          </svg>
+        </button>
+        <button id="joinCodeBtn" class="btn btn-secondary" style="width: auto; padding: 0 16px; flex-shrink: 0;">Войти</button>
+      </div>
+
+      <div class="feature-pills">
+        <span class="pill-info">До 10 человек</span>
+        <span class="pill-info">До 1080p HD</span>
+        <span class="pill-info">Фото 1:1 в чате</span>
+        <span class="pill-info">P2P-шифрование</span>
+      </div>
+
+      <div class="theme-row">
+        <span class="theme-row-label">Цвет темы</span>
+        <div id="homeThemeRow" class="theme-swatches"></div>
+      </div>
+
+      <div style="margin-top: 10px; text-align: center;">
+        <button id="openNetSettingsBtn" class="btn-ghost">Сетевые настройки (резервный TURN)</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 2. LOBBY SCREEN ==================== -->
+  <section id="lobbyScreen" class="screen hidden">
+    <div class="card lobby-card">
+      <div class="brand" style="margin-bottom: 14px;">
+        <div class="brand-mark" style="width: 34px; height: 34px; border-radius: 10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 7l-7 5 7 5V7z"></path>
+            <rect x="1" y="5" width="15" height="14" rx="3" ry="3"></rect>
+          </svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div class="brand-title" style="font-size: 18px;">Picnic — подготовка</div>
+          <div id="lobbyRoomLabel" class="brand-sub">Комната ...</div>
+        </div>
+        <div class="lobby-hdr-actions">
+          <button id="lobbyShareBtn" class="icon-btn" style="width: 36px; height: 36px;" title="Поделиться / QR-код">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+          </button>
+          <button id="lobbyMenuBtn" class="icon-btn" style="width: 36px; height: 36px;" title="Настройки до входа">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="4" y1="7" x2="20" y2="7"></line>
+              <line x1="4" y1="12" x2="20" y2="12"></line>
+              <line x1="4" y1="17" x2="20" y2="17"></line>
+            </svg>
+          </button>
+          <button id="lobbyBackBtn" class="icon-btn" style="width: 36px; height: 36px;" title="На главную">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="lobbyMenu" class="lobby-menu hidden">
+        <button id="lobbyMenuDevicesBtn" class="menu-item">
+          <span class="menu-item-left">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            </svg>
+            <span>Камера и микрофон</span>
+          </span>
+          <span class="menu-item-val">Выбор</span>
+        </button>
+        <button id="lobbyMenuMirrorBtn" class="menu-item">
+          <span class="menu-item-left">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3v18"></path>
+              <polyline points="8 7 4 12 8 17"></polyline>
+              <polyline points="16 7 20 12 16 17"></polyline>
+            </svg>
+            <span>Зеркало камеры</span>
+          </span>
+          <span id="lobbyMenuMirrorVal" class="menu-item-val">Вкл</span>
+        </button>
+        <button id="lobbyMenuNetBtn" class="menu-item">
+          <span class="menu-item-left">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+            <span>Сеть и VPN (TURN)</span>
+          </span>
+          <span id="lobbyMenuNetVal" class="menu-item-val">Авто</span>
+        </button>
+        <div class="menu-divider"></div>
+        <div class="menu-theme-box">
+          <div class="menu-theme-title">Цвет темы</div>
+          <div id="lobbyThemeRow" class="theme-swatches"></div>
+        </div>
+      </div>
+
+      <div id="lobbyPreviewBox" class="lobby-preview">
+        <video id="lobbyVideo" autoplay muted playsinline></video>
+        <div id="lobbyCamOff" class="cam-off-overlay hidden">
+          <div id="lobbyAvatar" class="avatar-circle">Я</div>
+          <div class="cam-off-text">Камера выключена</div>
+        </div>
+        <div class="preview-controls">
+          <button id="lobbyMicBtn" class="icon-btn" title="Микрофон"></button>
+          <button id="lobbyCamBtn" class="icon-btn" title="Камера"></button>
+          <button id="lobbyFlipBtn" class="icon-btn hidden" title="Переключить камеру">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 1l4 4-4 4"></path>
+              <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+              <path d="M7 23l-4-4 4-4"></path>
+              <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="status-banner">
+        <div class="status-left">
+          <span id="lobbyStatusDot" class="status-dot checking"></span>
+          <div class="status-text-wrap">
+            <span id="lobbyStatusText">Проверяем состояние звонка...</span>
+            <span id="lobbyPeersNames" class="status-sub hidden"></span>
+          </div>
+        </div>
+        <button id="lobbyRecheckBtn" class="btn-ghost hidden" style="height: auto; padding: 2px 6px;">Обновить</button>
+      </div>
+
+      <div id="lobbyFormArea">
+        <div class="input-group">
+          <label class="input-label" for="userNameInput">Ваше имя (обязательно перед входом)</label>
+          <input id="userNameInput" class="input" type="text" maxlength="28" placeholder="Например, Иван или Аня" autocomplete="name" />
+        </div>
+
+        <div class="grid-2" style="margin-bottom: 16px;">
+          <div class="input-group" style="margin-bottom: 0;">
+            <label class="input-label" for="qualitySelect">Качество</label>
+            <select id="qualitySelect" class="select-input">
+              <option value="auto" selected>Авто (до 1080p)</option>
+              <option value="1080">Максимум (1080p)</option>
+              <option value="720">Стандарт (720p)</option>
+              <option value="480">Среднее (480p)</option>
+              <option value="360">Эконом (360p)</option>
+            </select>
+          </div>
+          <div class="input-group" style="margin-bottom: 0;">
+            <label class="input-label" for="lobbyFpsSelect">Плавность (FPS)</label>
+            <select id="lobbyFpsSelect" class="select-input">
+              <option value="30" selected>30 FPS</option>
+              <option value="45">45 FPS</option>
+              <option value="60">60 FPS</option>
+            </select>
+          </div>
+        </div>
+
+        <button id="enterCallBtn" class="btn btn-primary">
+          Присоединиться к звонку
+        </button>
+      </div>
+
+      <div id="lobbyEndedArea" class="hidden" style="text-align: center; padding-top: 4px;">
+        <p id="lobbyEndedReason" class="desc" style="margin-bottom: 16px;">
+          Этот видеозвонок уже завершён, либо в комнате пока никого нет.
+        </p>
+        <div class="row-gap">
+          <button id="lobbyRetryBtn" class="btn btn-secondary">Проверить ещё раз</button>
+          <button id="lobbyCreateNewBtn" class="btn btn-primary">Создать новый</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 3. CALL SCREEN ==================== -->
+  <section id="callScreen" class="hidden">
+    <!-- Top Floating Bar -->
+    <header class="top-bar">
+      <div class="top-pill">
+        <span class="status-dot live"></span>
+        <span id="callTimer">00:00</span>
+        <span style="color: var(--text-muted);">·</span>
+        <span id="participantCountLabel">1/10</span>
+      </div>
+
+      <div class="top-actions">
+        <button id="shareInviteBtn" class="circle-btn" title="Поделиться ссылкой-приглашением">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+        </button>
+
+        <button id="menuToggleBtn" class="circle-btn" title="Меню настроек">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="7" x2="20" y2="7"></line>
+            <line x1="4" y1="12" x2="20" y2="12"></line>
+            <line x1="4" y1="17" x2="20" y2="17"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Dropdown Hamburger Menu -->
+    <div id="sideMenu" class="side-menu hidden">
+      <button id="menuLayoutBtn" class="menu-item">
+        <span class="menu-item-left">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <span>Раскладка</span>
+        </span>
+        <span id="menuLayoutVal" class="menu-item-val">Фокус</span>
+      </button>
+
+      <button id="menuFitBtn" class="menu-item">
+        <span class="menu-item-left">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+            <path d="M9 3v18"></path>
+          </svg>
+          <span>Масштаб</span>
+        </span>
+        <span id="menuFitVal" class="menu-item-val">Заполнить</span>
+      </button>
+
+      <button id="menuFsBtn" class="menu-item">
+        <span class="menu-item-left">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <polyline points="9 21 3 21 3 15"></polyline>
+            <line x1="21" y1="3" x2="14" y2="10"></line>
+            <line x1="3" y1="21" x2="10" y2="14"></line>
+          </svg>
+          <span>На весь экран</span>
+        </span>
+        <span id="menuFsVal" class="menu-item-val">Выкл</span>
+      </button>
+
+      <div class="menu-divider"></div>
+
+      <button id="menuQualityBtn" class="menu-item">
+        <span class="menu-item-left">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>Качество и FPS</span>
+        </span>
+        <span id="menuQualityVal" class="menu-item-val">Авто · 720p</span>
+      </button>
+
+      <button id="menuDevicesBtn" class="menu-item">
+        <span class="menu-item-left">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          </svg>
+          <span>Камера и микрофон</span>
+        </span>
+        <span class="menu-item-val">Выбор</span>
+      </button>
+
+      <div class="menu-divider"></div>
+
+      <div class="menu-theme-box">
+        <div class="menu-theme-title">Цвет темы</div>
+        <div id="menuThemeRow" class="theme-swatches"></div>
+      </div>
+    </div>
+
+    <div id="reconnectPill" class="reconnect-pill hidden">
+      <span class="status-dot checking"></span>
+      <span>Переподключение к комнате...</span>
+    </div>
+
+    <!-- Video Grid / Stage -->
+    <main id="videoStage"></main>
+    <div id="pinnedStrip" class="hidden"></div>
+
+    <!-- Waiting for Family Box (shown briefly when alone) -->
+    <div id="waitingOverlay" class="hidden">
+      <div class="waiting-box">
+        <h3>Вы в комнате</h3>
+        <p>Отправьте ссылку близким — как только кто-то откроет её и введёт имя, он появится здесь.</p>
+        <button id="waitingCopyBtn" class="btn btn-primary" style="height: 42px; font-size: 14px;">
+          Отправить ссылку-приглашение
+        </button>
+      </div>
+    </div>
+
+    <!-- Corner & Fullscreen Chat -->
+    <aside id="chatWidget">
+      <button id="chatCollapsedPill" class="chat-pill-collapsed">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>Чат</span>
+        <span id="chatUnreadPill" class="badge-count hidden" style="position: static;">0</span>
+      </button>
+
+      <div id="chatPanel" class="chat-panel hidden">
+        <div class="chat-header">
+          <div class="chat-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            Чат
+          </div>
+          <div class="chat-header-btns">
+            <button id="chatFullscreenBtn" class="chat-hdr-btn" title="Открыть на весь экран">
+              <svg id="chatFsExpandIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <polyline points="9 21 3 21 3 15"></polyline>
+                <line x1="21" y1="3" x2="14" y2="10"></line>
+                <line x1="3" y1="21" x2="10" y2="14"></line>
+              </svg>
+              <svg id="chatFsShrinkIcon" class="hidden" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="4 14 10 14 10 20"></polyline>
+                <polyline points="20 10 14 10 14 4"></polyline>
+                <line x1="14" y1="10" x2="21" y2="3"></line>
+                <line x1="3" y1="21" x2="10" y2="14"></line>
+              </svg>
+            </button>
+            <button id="chatMinimizeBtn" class="chat-hdr-btn" title="Свернуть чат">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="chatMessages" class="chat-messages">
+          <div id="chatEmptyHint" class="chat-empty">Сообщений пока нет.<br />Можно писать, отвечать (тап по тексту) и отправлять фото в оригинале.</div>
+        </div>
+
+        <!-- Reply Target Bar -->
+        <div id="chatReplyBar" class="chat-compose-bar hidden">
+          <div class="chat-compose-left">
+            <span class="chat-compose-line"></span>
+            <div class="chat-compose-info">
+              <span id="chatReplyTitle" class="chat-compose-title">Ответ</span>
+              <span id="chatReplyText" class="chat-compose-sub"></span>
+            </div>
+          </div>
+          <button id="chatReplyCancel" class="chat-compose-close" type="button" title="Отменить ответ">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Mini-Preview for Pending Photo (1:1 original) -->
+        <div id="chatPhotoPreview" class="chat-compose-bar hidden">
+          <div class="chat-compose-left">
+            <img id="chatPhotoThumb" class="chat-compose-thumb" alt="Предпросмотр" />
+            <div class="chat-compose-info">
+              <span id="chatPhotoName" class="chat-compose-title">photo.jpg</span>
+              <span id="chatPhotoSize" class="chat-compose-sub">Оригинал · 1.2 МБ</span>
+            </div>
+          </div>
+          <button id="chatPhotoCancel" class="chat-compose-close" type="button" title="Убрать фото">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <form id="chatForm" class="chat-form">
+          <input id="chatFileInput" type="file" accept="image/*" class="hidden" />
+          <button id="chatAttachBtn" class="chat-attach-btn" type="button" title="Прикрепить фото (оригинал)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="3" ry="3"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+          </button>
+          <input id="chatInput" class="chat-input" type="text" maxlength="500" placeholder="Сообщение или подпись..." autocomplete="off" />
+          <button id="chatSendBtn" class="chat-send-btn" type="submit" disabled title="Отправить">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- Bottom Floating Dock -->
+    <nav id="bottomDock" class="bottom-dock">
+      <button id="callMicBtn" class="dock-btn" title="Микрофон"></button>
+      <button id="callCamBtn" class="dock-btn" title="Камера"></button>
+
+      <button id="callFlipBtn" class="dock-btn hidden" title="Повернуть камеру">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 1l4 4-4 4"></path>
+          <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+          <path d="M7 23l-4-4 4-4"></path>
+          <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+        </svg>
+      </button>
+
+      <button id="callChatToggleBtn" class="dock-btn" title="Открыть / свернуть чат">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span id="dockChatBadge" class="badge-count hidden">0</span>
+      </button>
+
+      <button id="leaveCallBtn" class="dock-btn end-call" title="Завершить звонок">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 2.59 3.4z" transform="rotate(135 12 12)"></path>
+        </svg>
+      </button>
+
+      <button id="collapseDockBtn" class="dock-btn collapse-btn" title="Свернуть панель вниз">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+    </nav>
+
+    <!-- Restore Handle when Dock is Collapsed -->
+    <button id="dockRestoreBtn" class="dock-restore-btn" title="Вернуть кнопки">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+    </button>
+  </section>
+
+  <!-- ==================== FULLSCREEN PHOTO LIGHTBOX ==================== -->
+  <div id="photoLightbox" class="lightbox hidden">
+    <div class="lightbox-top">
+      <div id="lightboxMeta" class="lightbox-meta">Фото</div>
+      <div class="lightbox-actions">
+        <button id="lightboxReplyBtn" class="lightbox-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 14 4 9 9 4"></polyline>
+            <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+          </svg>
+          Ответить
+        </button>
+        <button id="lightboxDownloadBtn" class="lightbox-btn primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Скачать
+        </button>
+        <button id="lightboxCloseBtn" class="lightbox-btn" style="padding: 0 10px;" title="Закрыть">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div id="lightboxStage" class="lightbox-stage">
+      <img id="lightboxImg" class="lightbox-img" alt="Просмотр фото" />
+    </div>
+  </div>
+
+  <!-- ==================== MODALS & TOASTS ==================== -->
+  <div id="toastStack"></div>
+
+  <!-- Quality Modal -->
+  <div id="qualityModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-title">Качество и частота кадров</div>
+      <div class="input-label" style="margin-bottom: 6px;">Разрешение</div>
+      <select id="callQualitySelect" class="select-input">
+        <option value="auto">Авто (1080p/720p + адаптация до 360–480p)</option>
+        <option value="1080">Максимум (1080p)</option>
+        <option value="720">Стандарт (720p)</option>
+        <option value="480">Среднее (480p)</option>
+        <option value="360">Эконом (360p)</option>
+      </select>
+      <div class="input-label" style="margin: 12px 0 6px;">Частота кадров (FPS)</div>
+      <select id="callFpsSelect" class="select-input">
+        <option value="30" selected>30 FPS (Стандартно)</option>
+        <option value="45">45 FPS (Повышенная плавность)</option>
+        <option value="60">60 FPS (Максимальная плавность)</option>
+      </select>
+      <p class="desc" style="margin: 12px 0 0; font-size: 12.5px;">
+        В режиме «Авто» качество и частота кадров подстраиваются под скорость интернета и число участников, чтобы не пропадал голос.
+      </p>
+      <div class="modal-actions">
+        <button id="closeQualityModalBtn" class="btn btn-primary" style="height: 42px;">Готово</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Devices Modal -->
+  <div id="devicesModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-title">Камера и микрофон</div>
+      <div class="input-group">
+        <label class="input-label" for="micSelect">Микрофон</label>
+        <select id="micSelect" class="select-input"></select>
+      </div>
+      <div class="input-group" style="margin-bottom: 0;">
+        <label class="input-label" for="camSelect">Камера</label>
+        <select id="camSelect" class="select-input"></select>
+      </div>
+      <div class="modal-actions">
+        <button id="applyDevicesBtn" class="btn btn-primary" style="height: 42px;">Применить</button>
+        <button id="closeDevicesModalBtn" class="btn btn-ghost">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leave Choice Modal -->
+  <div id="leaveModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-title">Завершить видеозвонок?</div>
+      <p class="desc" style="margin-bottom: 16px;">Вы организатор этой встречи. Можно выйти самому или закрыть звонок сразу для всех.</p>
+      <div class="modal-actions" style="margin-top: 0;">
+        <button id="endForAllBtn" class="btn btn-primary" style="background: var(--danger); color: #fff; height: 44px;">Завершить для всех</button>
+        <button id="leaveOnlyMeBtn" class="btn btn-secondary" style="height: 44px;">Выйти только мне</button>
+        <button id="cancelLeaveBtn" class="btn btn-ghost">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Network / TURN Settings Modal -->
+  <div id="netModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-title">Резервный TURN-сервер</div>
+      <p class="desc" style="margin-bottom: 14px; font-size: 13px;">
+        Обычно оставлять поля пустыми — всё работает напрямую. Заполняйте, только если жёсткий мобильный оператор (CGNAT) блокирует прямое P2P-соединение.
+      </p>
+      <div class="input-group">
+        <label class="input-label" for="turnUrlInput">TURN URL</label>
+        <input id="turnUrlInput" class="input" type="text" placeholder="turn:standard.relay.metered.ca:80" />
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="turnUserInput">Username</label>
+        <input id="turnUserInput" class="input" type="text" placeholder="Необязательно" />
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="turnPassInput">Credential / Password</label>
+        <input id="turnPassInput" class="input" type="password" placeholder="Необязательно" />
+      </div>
+      <label class="check-row">
+        <input id="turnShareCheck" type="checkbox" />
+        <span>Передавать мой TURN внутри ссылки-приглашения (поможет собеседникам с жёстким VPN)</span>
+      </label>
+      <div class="modal-actions">
+        <button id="saveNetBtn" class="btn btn-primary" style="height: 42px;">Сохранить</button>
+        <button id="closeNetBtn" class="btn btn-ghost">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Share QR & Link Modal -->
+  <div id="shareModal" class="modal-backdrop hidden">
+    <div class="modal-card" style="text-align: center;">
+      <div class="modal-title" style="margin-bottom: 6px;">Пригласить в Picnic</div>
+      <p class="desc" style="margin-bottom: 14px; font-size: 13px;">
+        Наведите обычную камеру телефона на QR-код (или сделайте скриншот) — либо скопируйте ссылку.
+      </p>
+      <div class="qr-box">
+        <canvas id="shareQrCanvas"></canvas>
+      </div>
+      <input id="shareUrlInput" class="input" type="text" readonly style="font-size: 12.5px; text-align: center; height: 40px; margin-bottom: 12px;" />
+      <div class="row-gap" style="margin-bottom: 8px;">
+        <button id="shareCopyBtn" class="btn btn-primary" style="height: 42px; font-size: 14px;">Скопировать</button>
+        <button id="shareNativeBtn" class="btn btn-secondary" style="height: 42px; font-size: 14px;">Отправить</button>
+      </div>
+      <div class="row-gap">
+        <button id="shareDownloadQrBtn" class="btn btn-ghost" style="flex: 1;">Скачать QR</button>
+        <button id="closeShareModalBtn" class="btn btn-ghost" style="flex: 1;">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Scanner Modal -->
+  <div id="qrScannerModal" class="modal-backdrop hidden">
+    <div class="modal-card" style="text-align: center;">
+      <div class="modal-title" style="margin-bottom: 8px;">Сканировать QR-код</div>
+      <div class="qr-scanner-view">
+        <video id="qrScanVideo" autoplay muted playsinline></video>
+        <div class="qr-scanner-frame"></div>
+      </div>
+      <canvas id="qrScanCanvas" class="hidden"></canvas>
+      <p id="qrScanHint" class="desc" style="margin-bottom: 12px; font-size: 12.5px;">Наведите камеру на QR-код приглашения</p>
+      <button id="closeQrScannerBtn" class="btn btn-secondary" style="height: 42px;">Закрыть</button>
+    </div>
+  </div>
+
+  <!-- ==================== APP SCRIPT ==================== -->
+  <script type="module">
+    import { joinRoom, getRelaySockets } from 'https://esm.sh/@trystero-p2p/mqtt@0.26.0';
+
+    const APP_ID = 'picnic-video-v1';
+    const MAX_PARTICIPANTS = 10;
+    const MAX_PHOTO_BYTES = 20 * 1024 * 1024; // 20 MB original limit
+
+    const DEFAULT_STUN = [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun.cloudflare.com:3478' }
+    ];
+
+    const QUALITY_PROFILES = {
+      1080: { label: '1080p', width: 1920, height: 1080, scaleDown: 1, maxBitrate: 2500000 },
+      720:  { label: '720p',  width: 1280, height: 720,  scaleDown: 1.5, maxBitrate: 1200000 },
+      480:  { label: '480p',  width: 854,  height: 480,  scaleDown: 2.25, maxBitrate: 600000 },
+      360:  { label: '360p',  width: 640,  height: 360,  scaleDown: 3, maxBitrate: 320000 }
+    };
+
+    const THEMES = [
+      { id: 'black',  name: 'Чёрный',     swatch: '#F5F5F7' },
+      { id: 'green',  name: 'Зелёный',    swatch: '#2FD07A' },
+      { id: 'yellow', name: 'Жёлтый',     swatch: '#F5C431' },
+      { id: 'blue',   name: 'Синий',      swatch: '#3B82F6' },
+      { id: 'red',    name: 'Красный',    swatch: '#EF4444' },
+      { id: 'purple', name: 'Фиолетовый', swatch: '#A855F7' },
+      { id: 'rose',   name: 'Розовый',    swatch: '#EC4899' }
+    ];
+
+    // ==================== STATE ====================
+    const state = {
+      screen: 'home', // 'home' | 'lobby' | 'call'
+      theme: localStorage.getItem('picnic_theme') || 'black',
+      roomId: null,
+      isHost: false,
+      inCall: false,
+      roomAlive: false,
+      myName: localStorage.getItem('picnic_name') || '',
+      camOn: true,
+      micOn: true,
+      facingMode: 'user',
+      mirrorCam: true,
+      selectedMicId: '',
+      selectedCamId: '',
+      urlTurn: null,
+      localMinimized: false,
+      lobbyMenuOpen: false,
+      reconnectInFlight: false,
+      graceTimers: new Map(),
+      keepAliveNode: null,
+      qrScanStream: null,
+      qrScanTimer: null,
+      hasMultipleCameras: false,
+      qualityMode: 'auto',
+      targetFps: 30,
+      currentAutoTier: 720,
+      localStream: null,
+      room: null,
+      actions: null,
+      peers: new Map(), // peerId -> { id, name, camOn, micOn, inCall, isHost, alive, stream, joinedNotified, connState }
+      knownVideoSenders: new WeakSet(),
+      appliedEncoderConfig: new WeakMap(),
+      pinnedPeerId: null,
+      containFit: false,
+      forceGridLayout: false,
+      pureVideo: false,
+      menuOpen: false,
+      dockCollapsed: false,
+      chatOpen: false,
+      chatFullscreen: false,
+      unreadChat: 0,
+      replyTarget: null, // { id, sender, text, thumbUrl }
+      pendingPhoto: null, // { file, url, name, size, mime }
+      chatHistoryMap: new Map(), // msgId -> { el, msg }
+      blobUrls: new Set(),
+      lightboxData: null, // { url, name, msgId, sender }
+      callStartTs: 0,
+      timerInterval: null,
+      adaptInterval: null,
+      idleTimer: null,
+      lobbyCheckTimer: null,
+      waitingTimer: null,
+      wakeLock: null,
+      audioCtx: null,
+      analysers: new Map(), // key -> { source, analyser, data }
+      speakingTimer: null
+    };
+
+    // ==================== DOM REFS ====================
+    const $ = id => document.getElementById(id);
+    const els = {
+      homeScreen: $('homeScreen'),
+      lobbyScreen: $('lobbyScreen'),
+      callScreen: $('callScreen'),
+      createRoomBtn: $('createRoomBtn'),
+      joinCodeInput: $('joinCodeInput'),
+      scanQrBtn: $('scanQrBtn'),
+      joinCodeBtn: $('joinCodeBtn'),
+      homeThemeRow: $('homeThemeRow'),
+      openNetSettingsBtn: $('openNetSettingsBtn'),
+
+      lobbyRoomLabel: $('lobbyRoomLabel'),
+      lobbyShareBtn: $('lobbyShareBtn'),
+      lobbyMenuBtn: $('lobbyMenuBtn'),
+      lobbyBackBtn: $('lobbyBackBtn'),
+      lobbyMenu: $('lobbyMenu'),
+      lobbyMenuDevicesBtn: $('lobbyMenuDevicesBtn'),
+      lobbyMenuMirrorBtn: $('lobbyMenuMirrorBtn'),
+      lobbyMenuMirrorVal: $('lobbyMenuMirrorVal'),
+      lobbyMenuNetBtn: $('lobbyMenuNetBtn'),
+      lobbyMenuNetVal: $('lobbyMenuNetVal'),
+      lobbyThemeRow: $('lobbyThemeRow'),
+      lobbyPreviewBox: $('lobbyPreviewBox'),
+      lobbyVideo: $('lobbyVideo'),
+      lobbyCamOff: $('lobbyCamOff'),
+      lobbyAvatar: $('lobbyAvatar'),
+      lobbyMicBtn: $('lobbyMicBtn'),
+      lobbyCamBtn: $('lobbyCamBtn'),
+      lobbyFlipBtn: $('lobbyFlipBtn'),
+      lobbyStatusDot: $('lobbyStatusDot'),
+      lobbyStatusText: $('lobbyStatusText'),
+      lobbyPeersNames: $('lobbyPeersNames'),
+      lobbyRecheckBtn: $('lobbyRecheckBtn'),
+      lobbyFormArea: $('lobbyFormArea'),
+      lobbyEndedArea: $('lobbyEndedArea'),
+      lobbyEndedReason: $('lobbyEndedReason'),
+      lobbyRetryBtn: $('lobbyRetryBtn'),
+      lobbyCreateNewBtn: $('lobbyCreateNewBtn'),
+      userNameInput: $('userNameInput'),
+      qualitySelect: $('qualitySelect'),
+      lobbyFpsSelect: $('lobbyFpsSelect'),
+      enterCallBtn: $('enterCallBtn'),
+
+      callTimer: $('callTimer'),
+      participantCountLabel: $('participantCountLabel'),
+      shareInviteBtn: $('shareInviteBtn'),
+      menuToggleBtn: $('menuToggleBtn'),
+      sideMenu: $('sideMenu'),
+      menuLayoutBtn: $('menuLayoutBtn'),
+      menuLayoutVal: $('menuLayoutVal'),
+      menuFitBtn: $('menuFitBtn'),
+      menuFitVal: $('menuFitVal'),
+      menuFsBtn: $('menuFsBtn'),
+      menuFsVal: $('menuFsVal'),
+      menuQualityBtn: $('menuQualityBtn'),
+      menuQualityVal: $('menuQualityVal'),
+      menuDevicesBtn: $('menuDevicesBtn'),
+      menuThemeRow: $('menuThemeRow'),
+
+      videoStage: $('videoStage'),
+      pinnedStrip: $('pinnedStrip'),
+      reconnectPill: $('reconnectPill'),
+      waitingOverlay: $('waitingOverlay'),
+      waitingCopyBtn: $('waitingCopyBtn'),
+
+      bottomDock: $('bottomDock'),
+      callMicBtn: $('callMicBtn'),
+      callCamBtn: $('callCamBtn'),
+      callFlipBtn: $('callFlipBtn'),
+      callChatToggleBtn: $('callChatToggleBtn'),
+      dockChatBadge: $('dockChatBadge'),
+      leaveCallBtn: $('leaveCallBtn'),
+      collapseDockBtn: $('collapseDockBtn'),
+      dockRestoreBtn: $('dockRestoreBtn'),
+
+      chatWidget: $('chatWidget'),
+      chatCollapsedPill: $('chatCollapsedPill'),
+      chatUnreadPill: $('chatUnreadPill'),
+      chatPanel: $('chatPanel'),
+      chatFullscreenBtn: $('chatFullscreenBtn'),
+      chatFsExpandIcon: $('chatFsExpandIcon'),
+      chatFsShrinkIcon: $('chatFsShrinkIcon'),
+      chatMinimizeBtn: $('chatMinimizeBtn'),
+      chatMessages: $('chatMessages'),
+      chatEmptyHint: $('chatEmptyHint'),
+      chatReplyBar: $('chatReplyBar'),
+      chatReplyTitle: $('chatReplyTitle'),
+      chatReplyText: $('chatReplyText'),
+      chatReplyCancel: $('chatReplyCancel'),
+      chatPhotoPreview: $('chatPhotoPreview'),
+      chatPhotoThumb: $('chatPhotoThumb'),
+      chatPhotoName: $('chatPhotoName'),
+      chatPhotoSize: $('chatPhotoSize'),
+      chatPhotoCancel: $('chatPhotoCancel'),
+      chatForm: $('chatForm'),
+      chatAttachBtn: $('chatAttachBtn'),
+      chatFileInput: $('chatFileInput'),
+      chatInput: $('chatInput'),
+      chatSendBtn: $('chatSendBtn'),
+
+      photoLightbox: $('photoLightbox'),
+      lightboxMeta: $('lightboxMeta'),
+      lightboxImg: $('lightboxImg'),
+      lightboxStage: $('lightboxStage'),
+      lightboxDownloadBtn: $('lightboxDownloadBtn'),
+      lightboxReplyBtn: $('lightboxReplyBtn'),
+      lightboxCloseBtn: $('lightboxCloseBtn'),
+
+      toastStack: $('toastStack'),
+      qualityModal: $('qualityModal'),
+      callQualitySelect: $('callQualitySelect'),
+      callFpsSelect: $('callFpsSelect'),
+      closeQualityModalBtn: $('closeQualityModalBtn'),
+      devicesModal: $('devicesModal'),
+      micSelect: $('micSelect'),
+      camSelect: $('camSelect'),
+      applyDevicesBtn: $('applyDevicesBtn'),
+      closeDevicesModalBtn: $('closeDevicesModalBtn'),
+      leaveModal: $('leaveModal'),
+      endForAllBtn: $('endForAllBtn'),
+      leaveOnlyMeBtn: $('leaveOnlyMeBtn'),
+      cancelLeaveBtn: $('cancelLeaveBtn'),
+      netModal: $('netModal'),
+      turnUrlInput: $('turnUrlInput'),
+      turnUserInput: $('turnUserInput'),
+      turnPassInput: $('turnPassInput'),
+      turnShareCheck: $('turnShareCheck'),
+      saveNetBtn: $('saveNetBtn'),
+      closeNetBtn: $('closeNetBtn'),
+
+      shareModal: $('shareModal'),
+      shareQrCanvas: $('shareQrCanvas'),
+      shareUrlInput: $('shareUrlInput'),
+      shareCopyBtn: $('shareCopyBtn'),
+      shareNativeBtn: $('shareNativeBtn'),
+      shareDownloadQrBtn: $('shareDownloadQrBtn'),
+      closeShareModalBtn: $('closeShareModalBtn'),
+
+      qrScannerModal: $('qrScannerModal'),
+      qrScanVideo: $('qrScanVideo'),
+      qrScanCanvas: $('qrScanCanvas'),
+      qrScanHint: $('qrScanHint'),
+      closeQrScannerBtn: $('closeQrScannerBtn')
+    };
+
+    // ==================== THEMES ====================
+    function applyTheme(themeId) {
+      const valid = THEMES.some(t => t.id === themeId) ? themeId : 'black';
+      state.theme = valid;
+      localStorage.setItem('picnic_theme', valid);
+      document.documentElement.setAttribute('data-theme', valid);
+      document.querySelectorAll('.theme-dot').forEach(dot => {
+        dot.classList.toggle('active', dot.dataset.themeId === valid);
+      });
+    }
+
+    function renderThemeSwatches(container) {
+      container.innerHTML = '';
+      THEMES.forEach(t => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'theme-dot' + (t.id === state.theme ? ' active' : '');
+        btn.dataset.themeId = t.id;
+        btn.title = t.name;
+        btn.style.backgroundColor = t.swatch;
+        btn.addEventListener('click', () => applyTheme(t.id));
+        container.appendChild(btn);
+      });
+    }
+
+    // ==================== HELPERS ====================
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function firstLetter(name) {
+      const clean = (name || '').trim();
+      return clean ? Array.from(clean)[0].toUpperCase() : '?';
+    }
+
+    function formatBytes(bytes) {
+      if (bytes < 1024) return `${bytes} Б`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} КБ`;
+      return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
+    }
+
+    function generateRoomId() {
+      const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+      let res = 'pic-';
+      for (let i = 0; i < 6; i++) res += chars[Math.floor(Math.random() * chars.length)];
+      return res;
+    }
+
+    function generateMsgId() {
+      return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+    }
+
+    function extractTurnFromString(raw) {
+      const m = String(raw || '').match(/[?&#]turn=([A-Za-z0-9_-]+)/);
+      if (!m) return null;
+      try {
+        const b64 = m[1].replace(/-/g, '+').replace(/_/g, '/');
+        const json = decodeURIComponent(escape(atob(b64)));
+        const obj = JSON.parse(json);
+        if (obj && obj.url) return { url: String(obj.url), user: String(obj.user || ''), pass: String(obj.pass || '') };
+      } catch {}
+      return null;
+    }
+
+    function parseRoomFromInput(raw) {
+      const val = raw.trim();
+      if (!val) return null;
+      const t = extractTurnFromString(val);
+      if (t) state.urlTurn = t;
+      const hashMatch = val.match(/[#&?]room=([a-zA-Z0-9_-]{3,40})/);
+      if (hashMatch) return hashMatch[1];
+      const clean = val.replace(/[^a-zA-Z0-9_-]/g, '');
+      return clean.length >= 3 ? clean : null;
+    }
+
+    function getInviteUrl(roomId = state.roomId) {
+      const base = window.location.href.split('#')[0];
+      let hash = `#room=${roomId}`;
+      try {
+        const saved = JSON.parse(localStorage.getItem('picnic_turn') || 'null');
+        const turnToShare = (saved && saved.url && saved.shareInLink) ? { url: saved.url, user: saved.user || '', pass: saved.pass || '' } : state.urlTurn;
+        if (turnToShare && turnToShare.url) {
+          const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(turnToShare)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+          hash += `&turn=${b64}`;
+        }
+      } catch {}
+      return base + hash;
+    }
+
+    function showToast(text, duration = 3200) {
+      const el = document.createElement('div');
+      el.className = 'toast';
+      el.textContent = text;
+      els.toastStack.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.25s ease';
+        setTimeout(() => el.remove(), 260);
+      }, duration);
+    }
+
+    async function shareOrCopyInvite() {
+      const url = getInviteUrl();
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Picnic — видеозвонок',
+            text: 'Присоединяйся ко мне в Picnic:',
+            url
+          });
+          return;
+        } catch (err) {
+          if (err && err.name === 'AbortError') return;
+        }
+      }
+      await copyToClipboard(url);
+    }
+
+    async function copyToClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('Ссылка скопирована');
+      } catch {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        showToast('Ссылка скопирована');
+      }
+    }
+
+    function getIceConfig() {
+      const iceServers = [...DEFAULT_STUN];
+      const addTurn = (obj) => {
+        if (!obj || !obj.url) return;
+        if (iceServers.some(s => s.urls === obj.url)) return;
+        const entry = { urls: obj.url };
+        if (obj.user) entry.username = obj.user;
+        if (obj.pass) entry.credential = obj.pass;
+        iceServers.push(entry);
+      };
+      try {
+        addTurn(JSON.parse(localStorage.getItem('picnic_turn') || 'null'));
+      } catch {}
+      addTurn(state.urlTurn);
+      return { iceServers, iceCandidatePoolSize: 4 };
+    }
+
+    function setScreen(name) {
+      state.screen = name;
+      els.homeScreen.classList.toggle('hidden', name !== 'home');
+      els.lobbyScreen.classList.toggle('hidden', name !== 'lobby');
+      els.callScreen.classList.toggle('hidden', name !== 'call');
+    }
+
+    function getActiveRemotePeers() {
+      return [...state.peers.values()].filter(p => p.inCall);
+    }
+
+    function registerBlobUrl(url) {
+      state.blobUrls.add(url);
+      return url;
+    }
+
+    function playChime(type) {
+      try {
+        if (!state.audioCtx) return;
+        if (state.audioCtx.state === 'suspended') state.audioCtx.resume().catch(() => {});
+        const now = state.audioCtx.currentTime;
+        const osc = state.audioCtx.createOscillator();
+        const gain = state.audioCtx.createGain();
+        osc.type = 'sine';
+        if (type === 'join') {
+          osc.frequency.setValueAtTime(523.25, now);
+          osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.12);
+        } else if (type === 'leave') {
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(329.63, now + 0.14);
+        } else {
+          osc.frequency.setValueAtTime(680, now);
+        }
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.exponentialRampToValueAtTime(0.055, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+        osc.connect(gain);
+        gain.connect(state.audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.24);
+      } catch {}
+    }
+
+    // ==================== ICONS ====================
+    const ICONS = {
+      micOn: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>`,
+      micOff: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>`,
+      camOn: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"></path><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>`,
+      camOff: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`
+    };
+
+    // ==================== MEDIA ACQUISITION & HARDWARE CAMERA TOGGLE ====================
+    function getDesiredVideoConstraints(overrideFacing) {
+      let tier = 720;
+      if (state.qualityMode === '1080' || state.qualityMode === 'auto') tier = 1080;
+      else tier = Number(state.qualityMode) || 720;
+
+      const profile = QUALITY_PROFILES[tier] || QUALITY_PROFILES[720];
+      const fps = state.targetFps || 30;
+      const c = {
+        width: { ideal: profile.width, min: 320 },
+        height: { ideal: profile.height, min: 240 },
+        frameRate: { ideal: fps, max: fps }
+      };
+      if (state.selectedCamId && !overrideFacing) {
+        c.deviceId = { exact: state.selectedCamId };
+      } else {
+        c.facingMode = overrideFacing || state.facingMode;
+      }
+      return c;
+    }
+
+    async function getNewVideoTrack(overrideFacing) {
+      const attempts = [
+        getDesiredVideoConstraints(overrideFacing),
+        { facingMode: overrideFacing || state.facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+        { facingMode: overrideFacing || state.facingMode }
+      ];
+      for (const vc of attempts) {
+        try {
+          const s = await navigator.mediaDevices.getUserMedia({ video: vc });
+          const track = s.getVideoTracks()[0];
+          if (track) {
+            try { track.contentHint = 'motion'; } catch {}
+            return track;
+          }
+        } catch {}
+      }
+      throw new Error('Camera unavailable');
+    }
+
+    async function acquireLocalMedia() {
+      if (state.localStream) {
+        state.localStream.getTracks().forEach(t => t.stop());
+        state.localStream = null;
+      }
+
+      const audioConstraints = {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        channelCount: 1
+      };
+      if (state.selectedMicId) {
+        audioConstraints.deviceId = { exact: state.selectedMicId };
+      }
+
+      try {
+        state.localStream = await navigator.mediaDevices.getUserMedia({
+          video: getDesiredVideoConstraints(),
+          audio: audioConstraints
+        });
+      } catch {
+        try {
+          state.localStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: state.facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: true
+          });
+        } catch {
+          try {
+            state.localStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+            state.camOn = false;
+            showToast('Камера недоступна — только звук');
+          } catch {
+            state.localStream = new MediaStream();
+            state.camOn = false;
+            state.micOn = false;
+            showToast('Нет доступа к камере и микрофону');
+          }
+        }
+      }
+
+      // If user already toggled cam off in lobby, physically stop video track immediately
+      if (!state.camOn) {
+        state.localStream.getVideoTracks().forEach(t => {
+          t.stop();
+          state.localStream.removeTrack(t);
+        });
+      } else {
+        state.localStream.getVideoTracks().forEach(t => {
+          try { t.contentHint = 'motion'; } catch {}
+        });
+      }
+      state.localStream.getAudioTracks().forEach(t => (t.enabled = state.micOn));
+
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoInputs = devices.filter(d => d.kind === 'videoinput');
+        state.hasMultipleCameras = videoInputs.length > 1 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      } catch {
+        state.hasMultipleCameras = false;
+      }
+
+      els.lobbyFlipBtn.classList.toggle('hidden', !state.hasMultipleCameras);
+      els.callFlipBtn.classList.toggle('hidden', !state.hasMultipleCameras);
+
+      updateLobbyPreviewUI();
+      if (state.screen === 'lobby') {
+        setupSpeakingAnalyser('self', state.localStream);
+      }
+    }
+
+    function updateLobbyPreviewUI() {
+      const hasVideoTrack = state.localStream && state.localStream.getVideoTracks().some(t => t.readyState === 'live');
+      const showVideo = hasVideoTrack && state.camOn;
+
+      els.lobbyVideo.srcObject = showVideo ? state.localStream : null;
+      els.lobbyCamOff.classList.toggle('hidden', showVideo);
+      els.lobbyPreviewBox.classList.toggle('no-mirror', state.facingMode !== 'user' || !state.mirrorCam);
+      els.lobbyAvatar.textContent = firstLetter(els.userNameInput.value || state.myName || 'Я');
+
+      els.lobbyMicBtn.innerHTML = state.micOn ? ICONS.micOn : ICONS.micOff;
+      els.lobbyMicBtn.classList.toggle('off', !state.micOn);
+      if (!state.micOn) els.lobbyMicBtn.classList.remove('mic-live-ring');
+
+      els.lobbyCamBtn.innerHTML = state.camOn ? ICONS.camOn : ICONS.camOff;
+      els.lobbyCamBtn.classList.toggle('off', !state.camOn);
+    }
+
+    function syncMediaControlUI() {
+      updateLobbyPreviewUI();
+      els.callMicBtn.innerHTML = state.micOn ? ICONS.micOn : ICONS.micOff;
+      els.callMicBtn.classList.toggle('off', !state.micOn);
+      els.callCamBtn.innerHTML = state.camOn ? ICONS.camOn : ICONS.camOff;
+      els.callCamBtn.classList.toggle('off', !state.camOn);
+    }
+
+    function findVideoSender(pc) {
+      if (!pc) return null;
+      const senders = pc.getSenders ? pc.getSenders() : [];
+      for (const s of senders) {
+        if ((s.track && s.track.kind === 'video') || state.knownVideoSenders.has(s)) {
+          state.knownVideoSenders.add(s);
+          return s;
+        }
+      }
+      if (pc.getTransceivers) {
+        for (const tr of pc.getTransceivers()) {
+          if (tr.receiver && tr.receiver.track && tr.receiver.track.kind === 'video' && tr.sender) {
+            state.knownVideoSenders.add(tr.sender);
+            return tr.sender;
+          }
+        }
+      }
+      return null;
+    }
+
+    async function replaceOutgoingVideoTrack(newTrack) {
+      if (!state.room || !state.inCall) return;
+      const peerMap = state.room.getPeers ? state.room.getPeers() : {};
+      const pcs = Object.values(peerMap);
+      let addedNew = false;
+
+      for (const pc of pcs) {
+        const sender = findVideoSender(pc);
+        if (sender) {
+          state.knownVideoSenders.add(sender);
+          try { await sender.replaceTrack(newTrack); } catch {}
+        } else if (newTrack && state.room.addTrack) {
+          addedNew = true;
+        }
+      }
+      if (addedNew && newTrack && state.room.addTrack) {
+        try { state.room.addTrack(newTrack, state.localStream); } catch {}
+      }
+      if (newTrack) {
+        state.appliedEncoderConfig = new WeakMap();
+        applyAdaptiveVideoQuality();
+      }
+    }
+
+    function toggleMic() {
+      if (!state.audioCtx && state.screen === 'lobby') initAudioContext();
+      const audioTracks = state.localStream ? state.localStream.getAudioTracks() : [];
+      if (audioTracks.length === 0) {
+        showToast('Микрофон не найден');
+        return;
+      }
+      state.micOn = !state.micOn;
+      audioTracks.forEach(t => (t.enabled = state.micOn));
+      syncMediaControlUI();
+      broadcastMyState();
+      if (state.screen === 'call') renderVideoStage();
+    }
+
+    // Physical Hardware OFF & Fast Re-acquire ON
+    async function toggleCam() {
+      if (!state.localStream) state.localStream = new MediaStream();
+
+      if (state.camOn) {
+        state.camOn = false;
+        const oldTracks = state.localStream.getVideoTracks();
+        await replaceOutgoingVideoTrack(null);
+        oldTracks.forEach(t => {
+          t.stop();
+          state.localStream.removeTrack(t);
+        });
+      } else {
+        try {
+          const newTrack = await getNewVideoTrack();
+          state.localStream.getVideoTracks().forEach(t => {
+            t.stop();
+            state.localStream.removeTrack(t);
+          });
+          state.localStream.addTrack(newTrack);
+          state.camOn = true;
+          await replaceOutgoingVideoTrack(newTrack);
+        } catch {
+          state.camOn = false;
+          showToast('Не удалось включить камеру');
+          return;
+        }
+      }
+
+      syncMediaControlUI();
+      broadcastMyState();
+      if (state.screen === 'call') renderVideoStage();
+    }
+
+    async function flipCamera() {
+      if (!state.localStream) return;
+      const oldTrack = state.localStream.getVideoTracks()[0];
+      const nextFacing = state.facingMode === 'user' ? 'environment' : 'user';
+      state.selectedCamId = '';
+
+      let newTrack = null;
+      try {
+        // First try opening the other lens without killing old one
+        newTrack = await getNewVideoTrack(nextFacing);
+      } catch {
+        // Some Android devices forbid holding 2 cameras open simultaneously
+        if (oldTrack) {
+          oldTrack.stop();
+          state.localStream.removeTrack(oldTrack);
+        }
+        try {
+          newTrack = await getNewVideoTrack(nextFacing);
+        } catch {
+          showToast('Не удалось переключить камеру');
+          if (state.camOn) {
+            try {
+              const fallback = await getNewVideoTrack(state.facingMode);
+              state.localStream.addTrack(fallback);
+              await replaceOutgoingVideoTrack(fallback);
+            } catch {}
+          }
+          return;
+        }
+      }
+
+      state.facingMode = nextFacing;
+      if (oldTrack && oldTrack !== newTrack) {
+        if (oldTrack.readyState !== 'ended') oldTrack.stop();
+        state.localStream.removeTrack(oldTrack);
+      }
+      state.localStream.addTrack(newTrack);
+      state.camOn = true;
+
+      await replaceOutgoingVideoTrack(newTrack);
+      syncMediaControlUI();
+      broadcastMyState();
+      if (state.screen === 'call') renderVideoStage();
+      showToast(nextFacing === 'environment' ? 'Задняя камера' : 'Передняя камера');
+    }
+
+    // ==================== SIGNALING & P2P FILE TRANSFER (TRYSTERO) ====================
+    function attachPeerConnectionMonitors(peerId) {
+      if (!state.room || !state.room.getPeers) return;
+      const peerMap = state.room.getPeers();
+      const pc = peerMap[peerId];
+      if (!pc || pc._picnicMonitored) return;
+      pc._picnicMonitored = true;
+
+      const updateConn = () => {
+        const peer = state.peers.get(peerId);
+        if (!peer) return;
+        const st = pc.iceConnectionState || pc.connectionState;
+        peer.connState = st;
+        if (state.screen === 'call') updateTileConnectionBadge(peerId, st);
+      };
+
+      pc.addEventListener('iceconnectionstatechange', updateConn);
+      pc.addEventListener('connectionstatechange', updateConn);
+      updateConn();
+    }
+
+    function clearPeerGraceTimer(peerId) {
+      const t = state.graceTimers.get(peerId);
+      if (t) {
+        clearTimeout(t);
+        state.graceTimers.delete(peerId);
+      }
+    }
+
+    function removePeerCompletely(peerId, silent = false) {
+      clearPeerGraceTimer(peerId);
+      const peer = state.peers.get(peerId);
+      if (peer && peer.inCall && !silent) {
+        const leftName = peer.name || 'Участник';
+        showToast(`${leftName} вышел из звонка`);
+        appendSystemChat(`${leftName} вышел из звонка`);
+        playChime('leave');
+      }
+      state.peers.delete(peerId);
+      cleanupSpeakingAnalyser(peerId);
+      if (state.pinnedPeerId === peerId) state.pinnedPeerId = null;
+      if (state.screen === 'call') {
+        renderVideoStage();
+        updateParticipantCounter();
+      } else if (state.screen === 'lobby') {
+        evaluateLobbyStatus();
+      }
+    }
+
+    function connectRoomChannel(roomId) {
+      if (state.room) return;
+
+      const room = joinRoom({
+        appId: APP_ID,
+        identity: 'none',
+        rtcConfig: getIceConfig()
+      }, roomId, {
+        onJoinError: (details) => {
+          if (state.screen === 'lobby' && !state.isHost) {
+            els.lobbyPeersNames.textContent = 'P2P-канал заблокирован VPN/NAT — проверьте ☰ → Сеть (TURN)';
+            els.lobbyPeersNames.classList.remove('hidden');
+          } else if (state.inCall) {
+            showToast('VPN/NAT мешает прямому каналу — попробуйте TURN в меню', 4500);
+          }
+        }
+      });
+
+      const stateAct = room.makeAction('state');
+      const chatAct = room.makeAction('chat');
+      const photoAct = room.makeAction('photo');
+      const ctrlAct = room.makeAction('ctrl');
+
+      state.room = room;
+      state.actions = { stateAct, chatAct, photoAct, ctrlAct };
+
+      room.onPeerJoin = peerId => {
+        clearPeerGraceTimer(peerId);
+        // If same person reconnected with same peerId or was temporarily lost
+        if (!state.peers.has(peerId)) {
+          state.peers.set(peerId, {
+            id: peerId,
+            name: 'Участник',
+            camOn: true,
+            micOn: true,
+            minimized: false,
+            reconnecting: false,
+            gracefulBye: false,
+            inCall: false,
+            isHost: false,
+            alive: false,
+            stream: null,
+            joinedNotified: false,
+            connState: 'checking'
+          });
+        } else {
+          const p = state.peers.get(peerId);
+          p.reconnecting = false;
+          p.gracefulBye = false;
+        }
+        els.reconnectPill.classList.add('hidden');
+        sendStateTo(peerId);
+        if (state.inCall && state.localStream && state.localStream.getTracks().length > 0) {
+          try { room.addStream(state.localStream, { target: peerId }); } catch {}
+        }
+        setTimeout(() => attachPeerConnectionMonitors(peerId), 150);
+      };
+
+      room.onPeerLeave = peerId => {
+        const peer = state.peers.get(peerId);
+        if (!peer) return;
+
+        // If user explicitly pressed leave, remove immediately
+        if (peer.gracefulBye || !peer.inCall || state.screen !== 'call') {
+          removePeerCompletely(peerId, false);
+          return;
+        }
+
+        // Otherwise keep tile in "Переподключение..." for 35s (or 65s if minimized)
+        peer.reconnecting = true;
+        peer.connState = 'reconnecting';
+        renderVideoStage();
+
+        const graceMs = peer.minimized ? 65000 : 35000;
+        clearPeerGraceTimer(peerId);
+        state.graceTimers.set(peerId, setTimeout(() => {
+          removePeerCompletely(peerId, false);
+        }, graceMs));
+      };
+
+      const handleIncomingTrackOrStream = (stream, peerId) => {
+        clearPeerGraceTimer(peerId);
+        let peer = state.peers.get(peerId);
+        if (!peer) {
+          peer = { id: peerId, name: 'Участник', camOn: true, micOn: true, minimized: false, reconnecting: false, gracefulBye: false, inCall: true, isHost: false, alive: true, stream, joinedNotified: true, connState: 'connected' };
+          state.peers.set(peerId, peer);
+        } else {
+          peer.stream = stream;
+          peer.inCall = true;
+          peer.reconnecting = false;
+        }
+        if (state.screen === 'call') {
+          setupSpeakingAnalyser(peerId, stream);
+          renderVideoStage();
+        }
+        attachPeerConnectionMonitors(peerId);
+      };
+
+      room.onPeerStream = (stream, peerId) => {
+        stream.onaddtrack = () => handleIncomingTrackOrStream(stream, peerId);
+        handleIncomingTrackOrStream(stream, peerId);
+      };
+
+      room.onPeerTrack = (track, stream, peerId) => {
+        track.onunmute = () => {
+          if (state.screen === 'call') renderVideoStage();
+        };
+        handleIncomingTrackOrStream(stream, peerId);
+      };
+
+      stateAct.onMessage = (data, { peerId }) => {
+        if (!data || typeof data !== 'object') return;
+        clearPeerGraceTimer(peerId);
+
+        const prev = state.peers.get(peerId) || { id: peerId, stream: null, joinedNotified: false, connState: 'checking' };
+        const wasInCall = prev.inCall;
+
+        // Deduplicate if same user rejoined with new peerId while old one is still in grace reconnecting state
+        if (data.inCall && data.name) {
+          for (const [oldId, oldP] of state.peers.entries()) {
+            if (oldId !== peerId && oldP.reconnecting && oldP.name === String(data.name).slice(0, 28)) {
+              clearPeerGraceTimer(oldId);
+              state.peers.delete(oldId);
+              cleanupSpeakingAnalyser(oldId);
+            }
+          }
+        }
+
+        const updated = {
+          ...prev,
+          name: String(data.name || 'Участник').slice(0, 28),
+          camOn: Boolean(data.camOn),
+          micOn: Boolean(data.micOn),
+          minimized: Boolean(data.minimized),
+          reconnecting: false,
+          gracefulBye: false,
+          inCall: Boolean(data.inCall),
+          isHost: Boolean(data.isHost),
+          alive: Boolean(data.alive)
+        };
+        state.peers.set(peerId, updated);
+        if (updated.alive) state.roomAlive = true;
+
+        if (state.screen === 'lobby') evaluateLobbyStatus();
+
+        if (state.inCall && updated.inCall && !wasInCall && !updated.joinedNotified) {
+          updated.joinedNotified = true;
+          showToast(`${updated.name} присоединился`);
+          appendSystemChat(`${updated.name} присоединился к звонку`);
+          playChime('join');
+        }
+
+        if (state.screen === 'call') {
+          renderVideoStage();
+          updateParticipantCounter();
+        }
+      };
+
+      chatAct.onMessage = (data, { peerId }) => {
+        if (!data || !data.text) return;
+        const peer = state.peers.get(peerId);
+        const senderName = (peer && peer.name) || data.sender || 'Участник';
+        appendChatMessage({
+          id: data.id || generateMsgId(),
+          mine: false,
+          sender: senderName,
+          text: String(data.text).slice(0, 500),
+          replyTo: data.replyTo || null,
+          ts: data.ts || Date.now()
+        });
+      };
+
+      // Binary 1:1 original photo transfer
+      photoAct.onReceive = ({ byteLength, metadata }) => {
+        if (!metadata || typeof metadata.mime !== 'string') return false;
+        return byteLength <= MAX_PHOTO_BYTES && metadata.mime.startsWith('image/');
+      };
+
+      photoAct.onReceiveProgress = (percent, { peerId, metadata }) => {
+        if (!metadata || !metadata.msgId) return;
+        const peer = state.peers.get(peerId);
+        const senderName = (peer && peer.name) || metadata.sender || 'Участник';
+        ensurePhotoPlaceholder({
+          id: metadata.msgId,
+          mine: false,
+          sender: senderName,
+          caption: metadata.caption || '',
+          replyTo: metadata.replyTo || null,
+          ts: metadata.ts || Date.now()
+        }, Math.round(percent * 100));
+      };
+
+      photoAct.onMessage = (bytes, { peerId, metadata }) => {
+        if (!metadata) return;
+        const peer = state.peers.get(peerId);
+        const senderName = (peer && peer.name) || metadata.sender || 'Участник';
+        const mime = (metadata.mime && metadata.mime.startsWith('image/')) ? metadata.mime : 'image/jpeg';
+        const blob = new Blob([bytes], { type: mime });
+        const url = registerBlobUrl(URL.createObjectURL(blob));
+        finalizePhotoMessage({
+          id: metadata.msgId || generateMsgId(),
+          mine: false,
+          sender: senderName,
+          url,
+          fileName: metadata.fileName || 'photo.jpg',
+          caption: metadata.caption || '',
+          replyTo: metadata.replyTo || null,
+          ts: metadata.ts || Date.now()
+        });
+      };
+
+      ctrlAct.onMessage = (data, { peerId }) => {
+        if (!data || !data.type) return;
+        if (data.type === 'end_all' && state.inCall) {
+          showToast('Организатор завершил видеозвонок для всех', 4500);
+          teardownCallAndGoHome(true);
+        } else if (data.type === 'bye' && peerId) {
+          const p = state.peers.get(peerId);
+          if (p) p.gracefulBye = true;
+          removePeerCompletely(peerId, false);
+        }
+      };
+    }
+
+    function sendStateTo(targetPeerId) {
+      if (!state.actions) return;
+      const payload = {
+        name: state.myName || 'Организатор',
+        camOn: state.camOn,
+        micOn: state.micOn,
+        minimized: state.localMinimized,
+        inCall: state.inCall,
+        isHost: state.isHost,
+        alive: state.isHost || state.inCall
+      };
+      try {
+        if (targetPeerId) state.actions.stateAct.send(payload, { target: targetPeerId });
+        else state.actions.stateAct.send(payload);
+      } catch {}
+    }
+
+    function broadcastMyState() {
+      sendStateTo(null);
+    }
+
+    async function disconnectRoomChannel() {
+      if (state.room) {
+        try { await state.room.leave(); } catch {}
+      }
+      state.room = null;
+      state.actions = null;
+      state.peers.clear();
+      state.roomAlive = false;
+    }
+
+    // ==================== LOBBY FLOW ====================
+    async function openLobby(roomId, isHost = false) {
+      const rememberedHost = sessionStorage.getItem(`picnic_host_${roomId}`) === '1';
+      state.roomId = roomId;
+      state.isHost = isHost || rememberedHost;
+      if (state.isHost) {
+        try { sessionStorage.setItem(`picnic_host_${roomId}`, '1'); } catch {}
+      }
+      state.inCall = false;
+      state.roomAlive = state.isHost;
+      state.pinnedPeerId = null;
+
+      try {
+        history.pushState(null, '', `#room=${roomId}`);
+      } catch {
+        window.location.hash = `room=${roomId}`;
+      }
+
+      els.lobbyRoomLabel.textContent = `Комната: ${roomId}`;
+      els.userNameInput.value = state.myName;
+      els.qualitySelect.value = state.qualityMode;
+      els.lobbyFpsSelect.value = String(state.targetFps);
+      syncLobbyMenuUI();
+
+      els.lobbyFormArea.classList.remove('hidden');
+      els.lobbyEndedArea.classList.add('hidden');
+      els.lobbyRecheckBtn.classList.add('hidden');
+      els.lobbyPeersNames.classList.add('hidden');
+
+      setScreen('lobby');
+      await acquireLocalMedia();
+      connectRoomChannel(roomId);
+
+      if (state.isHost) {
+        els.lobbyStatusDot.className = 'status-dot live';
+        els.lobbyStatusText.textContent = 'Новая комната готова · можно начинать';
+        els.enterCallBtn.textContent = 'Начать видеозвонок';
+        els.enterCallBtn.disabled = false;
+      } else {
+        startGuestRoomCheck();
+      }
+    }
+
+    function startGuestRoomCheck() {
+      clearTimeout(state.lobbyCheckTimer);
+      els.lobbyFormArea.classList.remove('hidden');
+      els.lobbyEndedArea.classList.add('hidden');
+      els.lobbyRecheckBtn.classList.add('hidden');
+      els.lobbyPeersNames.classList.add('hidden');
+      els.lobbyStatusDot.className = 'status-dot checking';
+      els.lobbyStatusText.textContent = 'Ищем комнату (работает и под VPN)...';
+      els.enterCallBtn.textContent = 'Присоединиться к звонку';
+      els.enterCallBtn.disabled = true;
+
+      evaluateLobbyStatus();
+
+      // Keep listening continuously instead of locking out! Just show helpful hint if still waiting
+      state.lobbyCheckTimer = setTimeout(() => {
+        if (state.screen !== 'lobby' || state.isHost) return;
+        const alivePeers = [...state.peers.values()].filter(p => p.alive || p.inCall);
+        if (alivePeers.length === 0) {
+          els.lobbyStatusDot.className = 'status-dot checking';
+          els.lobbyStatusText.textContent = 'Ждём ответа комнаты...';
+          els.lobbyPeersNames.textContent = 'Если включён строгий VPN, проверьте ☰ → Сеть (TURN)';
+          els.lobbyPeersNames.classList.remove('hidden');
+          els.lobbyRecheckBtn.classList.remove('hidden');
+        }
+      }, 7000);
+    }
+
+    function evaluateLobbyStatus() {
+      if (state.screen !== 'lobby' || state.isHost) return;
+      const alivePeers = [...state.peers.values()].filter(p => p.alive || p.inCall);
+      const activePeers = [...state.peers.values()].filter(p => p.inCall);
+
+      if (activePeers.length >= MAX_PARTICIPANTS) {
+        clearTimeout(state.lobbyCheckTimer);
+        els.lobbyStatusDot.className = 'status-dot';
+        els.lobbyStatusText.textContent = `Комната заполнена (${activePeers.length}/${MAX_PARTICIPANTS})`;
+        els.lobbyFormArea.classList.add('hidden');
+        els.lobbyEndedArea.classList.remove('hidden');
+        els.lobbyEndedReason.textContent = 'Достигнут лимит участников (максимум 10 человек).';
+        return;
+      }
+
+      if (alivePeers.length > 0) {
+        clearTimeout(state.lobbyCheckTimer);
+        els.lobbyFormArea.classList.remove('hidden');
+        els.lobbyEndedArea.classList.add('hidden');
+        els.lobbyStatusDot.className = 'status-dot live';
+        els.lobbyStatusText.textContent = activePeers.length > 0
+          ? `Звонок активен · участников: ${activePeers.length}`
+          : 'Организатор открыл комнату · можно входить';
+
+        const names = activePeers.map(p => p.name).filter(Boolean);
+        if (names.length > 0) {
+          els.lobbyPeersNames.textContent = `Сейчас внутри: ${names.join(', ')}`;
+          els.lobbyPeersNames.classList.remove('hidden');
+        } else {
+          els.lobbyPeersNames.classList.add('hidden');
+        }
+        els.enterCallBtn.disabled = false;
+      }
+    }
+
+    // ==================== CALL LIFECYCLE ====================
+    async function enterCall() {
+      const name = els.userNameInput.value.trim();
+      if (!name) {
+        els.userNameInput.classList.remove('input-shake');
+        void els.userNameInput.offsetWidth;
+        els.userNameInput.classList.add('input-shake');
+        els.userNameInput.focus();
+        showToast('Введите ваше имя перед входом');
+        return;
+      }
+
+      if (getActiveRemotePeers().length >= MAX_PARTICIPANTS) {
+        showToast('Комната уже заполнена (10/10)');
+        return;
+      }
+
+      initAudioContext();
+      state.myName = name;
+      localStorage.setItem('picnic_name', name);
+
+      const newQuality = els.qualitySelect.value;
+      const newFps = Number(els.lobbyFpsSelect.value) || 30;
+      const qualityChanged = newQuality !== state.qualityMode || newFps !== state.targetFps;
+      state.qualityMode = newQuality;
+      state.targetFps = newFps;
+      els.callQualitySelect.value = state.qualityMode;
+      els.callFpsSelect.value = String(state.targetFps);
+
+      // Re-apply camera resolution constraints if user picked lower tier in lobby
+      if (qualityChanged && state.camOn && state.localStream) {
+        try {
+          const track = state.localStream.getVideoTracks()[0];
+          if (track && track.applyConstraints) {
+            await track.applyConstraints(getDesiredVideoConstraints());
+          }
+        } catch {}
+      }
+
+      state.inCall = true;
+      state.roomAlive = true;
+      state.callStartTs = Date.now();
+      state.dockCollapsed = false;
+      state.chatFullscreen = false;
+      els.callScreen.classList.remove('dock-collapsed');
+      els.chatWidget.classList.remove('chat-fullscreen');
+
+      clearChatHistory();
+      setScreen('call');
+      syncMediaControlUI();
+      syncMenuLabels();
+      updateParticipantCounter();
+
+      setupSpeakingAnalyser('self', state.localStream);
+
+      if (state.room && state.localStream && state.localStream.getTracks().length > 0) {
+        try { state.room.addStream(state.localStream); } catch {}
+      }
+      broadcastMyState();
+
+      getActiveRemotePeers().forEach(p => { p.joinedNotified = true; });
+      appendSystemChat(`Вы вошли как ${state.myName}`);
+
+      renderVideoStage();
+
+      clearTimeout(state.waitingTimer);
+      if (getActiveRemotePeers().length === 0) {
+        els.waitingOverlay.classList.remove('hidden');
+        state.waitingTimer = setTimeout(() => els.waitingOverlay.classList.add('hidden'), 10000);
+      } else {
+        els.waitingOverlay.classList.add('hidden');
+      }
+
+      startCallTimer();
+      startAdaptiveQualityEngine();
+      startSpeakingLoop();
+      startBackgroundAudioKeepAlive();
+      requestWakeLock();
+      resetIdleTimer();
+    }
+
+    function updateParticipantCounter() {
+      const total = 1 + getActiveRemotePeers().length;
+      els.participantCountLabel.textContent = `${total}/${MAX_PARTICIPANTS}`;
+      if (total > 1) {
+        clearTimeout(state.waitingTimer);
+        els.waitingOverlay.classList.add('hidden');
+      }
+    }
+
+    function startCallTimer() {
+      clearInterval(state.timerInterval);
+      const tick = () => {
+        const sec = Math.floor((Date.now() - state.callStartTs) / 1000);
+        const h = Math.floor(sec / 3600);
+        const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+        const s = String(sec % 60).padStart(2, '0');
+        els.callTimer.textContent = h > 0 ? `${h}:${m}:${s}` : `${m}:${s}`;
+      };
+      tick();
+      state.timerInterval = setInterval(tick, 1000);
+    }
+
+    async function teardownCallAndGoHome(endedByHost = false) {
+      clearInterval(state.timerInterval);
+      clearInterval(state.adaptInterval);
+      clearInterval(state.speakingTimer);
+      clearTimeout(state.idleTimer);
+      clearTimeout(state.lobbyCheckTimer);
+      clearTimeout(state.waitingTimer);
+
+      if (state.inCall && state.actions) {
+        try { state.actions.ctrlAct.send({ type: 'bye' }); } catch {}
+      }
+      for (const id of [...state.graceTimers.keys()]) clearPeerGraceTimer(id);
+      stopBackgroundAudioKeepAlive();
+
+      state.inCall = false;
+      state.isHost = false;
+      state.localMinimized = false;
+      state.pinnedPeerId = null;
+      state.menuOpen = false;
+      state.lobbyMenuOpen = false;
+      state.chatOpen = false;
+      state.chatFullscreen = false;
+      state.dockCollapsed = false;
+      state.unreadChat = 0;
+
+      els.callScreen.classList.remove('ui-hidden', 'dock-collapsed');
+      els.reconnectPill.classList.add('hidden');
+      els.sideMenu.classList.add('hidden');
+      els.lobbyMenu.classList.add('hidden');
+      els.menuToggleBtn.classList.remove('active');
+      els.shareModal.classList.add('hidden');
+      closeQrScanner();
+      els.leaveModal.classList.add('hidden');
+      els.qualityModal.classList.add('hidden');
+      els.devicesModal.classList.add('hidden');
+      closeLightbox();
+      clearChatHistory();
+
+      if (document.fullscreenElement) {
+        try { await document.exitFullscreen(); } catch {}
+      }
+
+      if (state.wakeLock) {
+        try { await state.wakeLock.release(); } catch {}
+        state.wakeLock = null;
+      }
+
+      await disconnectRoomChannel();
+
+      if (state.localStream) {
+        state.localStream.getTracks().forEach(t => t.stop());
+        state.localStream = null;
+      }
+
+      for (const key of [...state.analysers.keys()]) cleanupSpeakingAnalyser(key);
+      if (state.audioCtx) {
+        try { await state.audioCtx.close(); } catch {}
+        state.audioCtx = null;
+      }
+
+      try {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      } catch {
+        window.location.hash = '';
+      }
+      setScreen('home');
+
+      if (!endedByHost) showToast('Видеозвонок завершён');
+    }
+
+    async function requestWakeLock() {
+      if ('wakeLock' in navigator) {
+        try { state.wakeLock = await navigator.wakeLock.request('screen'); } catch {}
+      }
+    }
+
+    // ==================== VIDEO STAGE & TILE RENDERING ====================
+    function updateTileConnectionBadge(peerId, connState) {
+      const tile = document.querySelector(`[data-peer-tile="${peerId}"]`);
+      if (!tile) return;
+      const badge = tile.querySelector('.tile-conn-status');
+      if (!badge) return;
+      if (connState === 'failed') {
+        badge.textContent = 'Нет прямой связи (нужен TURN)';
+        badge.style.color = 'var(--danger)';
+        badge.classList.remove('hidden');
+      } else if (connState === 'disconnected' || connState === 'checking' || connState === 'new') {
+        badge.textContent = 'Соединяем...';
+        badge.style.color = 'var(--warn)';
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    function getOrCreateTile(p) {
+      let tile = document.querySelector(`[data-peer-tile="${p.id}"]`);
+      if (!tile) {
+        tile = document.createElement('div');
+        tile.className = 'video-tile';
+        tile.dataset.peerTile = p.id;
+
+        const vid = document.createElement('video');
+        vid.autoplay = true;
+        vid.playsInline = true;
+        vid.setAttribute('playsinline', '');
+        if (p.isSelf) { vid.muted = true; vid.volume = 0; }
+        tile.appendChild(vid);
+
+        const off = document.createElement('div');
+        off.className = 'cam-off-overlay hidden';
+        const av = document.createElement('div');
+        av.className = 'avatar-circle';
+        av.textContent = firstLetter(p.name);
+        const offTxt = document.createElement('div');
+        offTxt.className = 'cam-off-text';
+        offTxt.textContent = p.isSelf ? 'Камера выключена' : 'Камера отключена';
+        off.appendChild(av);
+        off.appendChild(offTxt);
+        tile.appendChild(off);
+
+        const connBadge = document.createElement('div');
+        connBadge.className = 'tile-conn-status hidden';
+        tile.appendChild(connBadge);
+
+        const badge = document.createElement('div');
+        badge.className = 'tile-badge';
+        const micSpan = document.createElement('span');
+        micSpan.className = 'mic-muted-dot hidden';
+        micSpan.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path></svg>`;
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'tile-name';
+        nameSpan.textContent = p.isSelf ? `${p.name} (Вы)` : p.name;
+        badge.appendChild(micSpan);
+        badge.appendChild(nameSpan);
+        tile.appendChild(badge);
+
+        const hint = document.createElement('div');
+        hint.className = 'tile-pin-hint';
+        tile.appendChild(hint);
+
+        tile.addEventListener('click', (e) => {
+          e.stopPropagation();
+          closeSideMenu();
+          resetIdleTimer();
+          const remotes = getActiveRemotePeers();
+          if (remotes.length >= 1) {
+            if (state.pinnedPeerId === p.id) {
+              state.pinnedPeerId = null;
+              renderVideoStage();
+            } else if (remotes.length >= 2 || tile.classList.contains('self-pip')) {
+              state.pinnedPeerId = p.id;
+              renderVideoStage();
+            }
+          }
+        });
+      }
+
+      const vid = tile.querySelector('video');
+      const off = tile.querySelector('.cam-off-overlay');
+      const badge = tile.querySelector('.tile-badge');
+      const micDot = tile.querySelector('.mic-muted-dot');
+      const nameSpan = tile.querySelector('.tile-name');
+      const avatar = tile.querySelector('.avatar-circle');
+      const hint = tile.querySelector('.tile-pin-hint');
+
+      if (nameSpan) nameSpan.textContent = p.isSelf ? `${p.name} (Вы)` : p.name;
+      if (avatar) avatar.textContent = firstLetter(p.name);
+      if (micDot) micDot.classList.toggle('hidden', p.micOn);
+      if (badge) badge.classList.toggle('mic-ok', p.micOn);
+
+      const hasLiveVid = p.stream && p.stream.getVideoTracks().some(t => t.readyState === 'live');
+      const showCam = p.camOn && !p.minimized && !p.reconnecting && hasLiveVid;
+
+      if (off) {
+        const offTxt = off.querySelector('.cam-off-text');
+        if (offTxt) {
+          if (p.reconnecting) offTxt.textContent = 'Переподключение...';
+          else if (p.minimized) offTxt.textContent = 'Свернул(а) браузер, но вас слышит';
+          else offTxt.textContent = p.isSelf ? 'Камера выключена' : 'Камера отключена';
+        }
+        off.classList.toggle('hidden', showCam);
+      }
+      // Keep <video> rendered (only opacity: 0 when cam is off) so remote audio never pauses
+      if (vid) {
+        vid.classList.toggle('cam-hidden-vid', !showCam);
+        if (p.stream) {
+          if (vid.srcObject !== p.stream) vid.srcObject = p.stream;
+          vid.onloadedmetadata = () => vid.play().catch(() => {});
+          if (vid.paused) vid.play().catch(() => {});
+        }
+      }
+
+      if (hint) {
+        const remotesCount = getActiveRemotePeers().length;
+        if (remotesCount >= 2) {
+          hint.textContent = state.pinnedPeerId === p.id ? 'Открепить' : 'Закрепить';
+          hint.classList.remove('hidden');
+        } else {
+          hint.classList.add('hidden');
+        }
+      }
+
+      if (!p.isSelf) {
+        updateTileConnectionBadge(p.id, p.reconnecting ? 'checking' : p.connState);
+      }
+
+      tile.classList.toggle('mirror', p.isSelf && state.facingMode === 'user' && state.mirrorCam);
+      tile.classList.toggle('contain-fit', state.containFit);
+      return tile;
+    }
+
+    function renderVideoStage() {
+      const remotes = getActiveRemotePeers();
+      const stage = els.videoStage;
+      const strip = els.pinnedStrip;
+      const selfObj = { id: 'self', name: state.myName || 'Вы', camOn: state.camOn, micOn: state.micOn, stream: state.localStream, isSelf: true };
+
+      const allActive = [selfObj, ...remotes.map(p => ({ ...p, isSelf: false }))];
+      const activeIds = new Set(allActive.map(x => x.id));
+
+      document.querySelectorAll('.video-tile').forEach(t => {
+        if (!activeIds.has(t.dataset.peerTile)) t.remove();
+      });
+
+      if (state.pinnedPeerId && !activeIds.has(state.pinnedPeerId)) state.pinnedPeerId = null;
+
+      const totalCount = allActive.length;
+      stage.classList.toggle('stage-compact', totalCount >= 5 && totalCount <= 6);
+      stage.classList.toggle('stage-crowded', totalCount >= 7);
+
+      // 1. Alone in room
+      if (remotes.length === 0) {
+        strip.classList.add('hidden');
+        const selfTile = getOrCreateTile(selfObj);
+        selfTile.classList.remove('self-pip', 'auto-hide-pip');
+        if (!state.forceGridLayout) {
+          stage.classList.add('stage-immersion');
+          stage.style.gridTemplateColumns = '';
+          stage.style.gridTemplateRows = '';
+          selfTile.classList.add('pinned');
+        } else {
+          stage.classList.remove('stage-immersion');
+          selfTile.classList.remove('pinned');
+          stage.style.gridTemplateColumns = 'minmax(260px, 520px)';
+          stage.style.gridTemplateRows = 'minmax(200px, 440px)';
+        }
+        if (selfTile.parentElement !== stage) stage.appendChild(selfTile);
+        syncMenuLabels();
+        return;
+      }
+
+      // 2. 1-on-1 call (unpinned)
+      if (remotes.length === 1 && !state.pinnedPeerId) {
+        strip.classList.add('hidden');
+        const partner = remotes[0];
+        const pTile = getOrCreateTile({ ...partner, isSelf: false });
+        const sTile = getOrCreateTile(selfObj);
+
+        if (!state.forceGridLayout) {
+          stage.classList.add('stage-immersion');
+          stage.style.gridTemplateColumns = '';
+          stage.style.gridTemplateRows = '';
+          pTile.classList.add('pinned');
+          pTile.classList.remove('self-pip', 'auto-hide-pip');
+          sTile.classList.remove('pinned');
+          sTile.classList.add('self-pip', 'auto-hide-pip');
+        } else {
+          stage.classList.remove('stage-immersion');
+          pTile.classList.remove('pinned', 'self-pip', 'auto-hide-pip');
+          sTile.classList.remove('pinned', 'self-pip', 'auto-hide-pip');
+          const isPortrait = window.innerHeight > window.innerWidth;
+          stage.style.gridTemplateColumns = isPortrait ? '1fr' : 'repeat(2, minmax(0, 1fr))';
+          stage.style.gridTemplateRows = isPortrait ? 'repeat(2, minmax(0, 1fr))' : 'minmax(0, 1fr)';
+        }
+        if (pTile.parentElement !== stage) stage.appendChild(pTile);
+        if (sTile.parentElement !== stage) stage.appendChild(sTile);
+        syncMenuLabels();
+        return;
+      }
+
+      // 3. Pinned focus mode (any group size or swapped 1-on-1)
+      if (state.pinnedPeerId) {
+        stage.classList.add('stage-immersion');
+        stage.style.gridTemplateColumns = '';
+        stage.style.gridTemplateRows = '';
+        const pinnedObj = allActive.find(x => x.id === state.pinnedPeerId) || allActive[0];
+        const others = allActive.filter(x => x.id !== pinnedObj.id);
+
+        const pinTile = getOrCreateTile(pinnedObj);
+        pinTile.classList.remove('self-pip', 'auto-hide-pip');
+        pinTile.classList.add('pinned');
+        if (pinTile.parentElement !== stage) stage.appendChild(pinTile);
+
+        if (others.length > 0) {
+          strip.classList.remove('hidden');
+          others.forEach(o => {
+            const oTile = getOrCreateTile(o);
+            oTile.classList.remove('pinned', 'self-pip', 'auto-hide-pip');
+            if (oTile.parentElement !== strip) strip.appendChild(oTile);
+          });
+        } else {
+          strip.classList.add('hidden');
+        }
+        syncMenuLabels();
+        return;
+      }
+
+      // 4. Group Grid (3 to 10 people — all visible simultaneously)
+      stage.classList.remove('stage-immersion');
+      strip.classList.add('hidden');
+      const isPortrait = window.innerHeight > window.innerWidth;
+      let cols = 2;
+      if (totalCount <= 2) cols = isPortrait ? 1 : 2;
+      else if (totalCount <= 4) cols = 2;
+      else if (totalCount <= 6) cols = isPortrait ? 2 : 3;
+      else if (totalCount <= 8) cols = isPortrait ? 2 : 4;
+      else cols = isPortrait ? 2 : 5;
+      const rows = Math.ceil(totalCount / cols);
+
+      stage.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+      stage.style.gridTemplateRows = `repeat(${rows}, minmax(0, 1fr))`;
+
+      allActive.forEach(p => {
+        const tile = getOrCreateTile(p);
+        tile.classList.remove('pinned', 'self-pip', 'auto-hide-pip');
+        if (tile.parentElement !== stage) stage.appendChild(tile);
+      });
+      syncMenuLabels();
+    }
+
+    window.addEventListener('resize', () => {
+      if (state.screen === 'call') renderVideoStage();
+    });
+
+    // ==================== MENU, FULLSCREEN & DOCK COLLAPSE ====================
+    function syncMenuLabels() {
+      els.menuLayoutVal.textContent = state.pinnedPeerId
+        ? 'Закреплён'
+        : (state.forceGridLayout ? 'Сетка' : 'Фокус');
+      els.menuFitVal.textContent = state.containFit ? 'Целиком' : 'Заполнить';
+      const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement) || state.pureVideo;
+      els.menuFsVal.textContent = isFs ? 'Вкл' : 'Выкл';
+
+      const profile = QUALITY_PROFILES[state.currentAutoTier] || QUALITY_PROFILES[720];
+      const qLabel = state.qualityMode === 'auto' ? `Авто · ${profile.label}` : profile.label;
+      els.menuQualityVal.textContent = `${qLabel} · ${state.targetFps}`;
+    }
+
+    function toggleSideMenu(force) {
+      state.menuOpen = typeof force === 'boolean' ? force : !state.menuOpen;
+      els.sideMenu.classList.toggle('hidden', !state.menuOpen);
+      els.menuToggleBtn.classList.toggle('active', state.menuOpen);
+      if (state.menuOpen) syncMenuLabels();
+      resetIdleTimer();
+    }
+
+    function closeSideMenu() {
+      if (state.menuOpen) toggleSideMenu(false);
+    }
+
+    function setDockCollapsed(collapsed) {
+      state.dockCollapsed = collapsed;
+      els.callScreen.classList.toggle('dock-collapsed', collapsed);
+      resetIdleTimer();
+    }
+
+    function toggleFullscreen() {
+      const el = document.documentElement;
+      const isNativeFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+
+      if (el.requestFullscreen || el.webkitRequestFullscreen) {
+        if (!isNativeFs) {
+          const req = el.requestFullscreen ? el.requestFullscreen() : el.webkitRequestFullscreen();
+          Promise.resolve(req).catch(() => {
+            state.pureVideo = !state.pureVideo;
+            syncMenuLabels();
+          });
+        } else {
+          const exit = document.exitFullscreen ? document.exitFullscreen() : document.webkitExitFullscreen();
+          Promise.resolve(exit).catch(() => {});
+        }
+      } else {
+        state.pureVideo = !state.pureVideo;
+        syncMenuLabels();
+      }
+      closeSideMenu();
+    }
+
+    document.addEventListener('fullscreenchange', syncMenuLabels);
+    document.addEventListener('webkitfullscreenchange', syncMenuLabels);
+
+    function resetIdleTimer() {
+      if (state.screen !== 'call') return;
+      els.callScreen.classList.remove('ui-hidden');
+      clearTimeout(state.idleTimer);
+
+      state.idleTimer = setTimeout(() => {
+        if (state.screen !== 'call') return;
+        const typingInChat = document.activeElement === els.chatInput;
+        const modalOpen = !els.qualityModal.classList.contains('hidden')
+          || !els.leaveModal.classList.contains('hidden')
+          || !els.devicesModal.classList.contains('hidden')
+          || !els.photoLightbox.classList.contains('hidden');
+        if (typingInChat || modalOpen || state.chatOpen || state.menuOpen) return;
+
+        if (getActiveRemotePeers().length > 0 || state.pureVideo || document.fullscreenElement) {
+          els.callScreen.classList.add('ui-hidden');
+        }
+      }, 3600);
+    }
+
+    ['mousemove', 'mousedown', 'touchstart', 'keydown'].forEach(evt => {
+      els.callScreen.addEventListener(evt, resetIdleTimer, { passive: true });
+    });
+
+    // ==================== SPEAKING ANALYSER (SAFE & LEAK-FREE) ====================
+    function initAudioContext() {
+      try {
+        if (!state.audioCtx) {
+          const Ctx = window.AudioContext || window.webkitAudioContext;
+          state.audioCtx = new Ctx();
+        }
+        if (state.audioCtx.state === 'suspended') {
+          state.audioCtx.resume().catch(() => {});
+        }
+      } catch {}
+    }
+
+    function cleanupSpeakingAnalyser(key) {
+      const prev = state.analysers.get(key);
+      if (!prev) return;
+      try { prev.source.disconnect(); } catch {}
+      try { prev.analyser.disconnect(); } catch {}
+      state.analysers.delete(key);
+    }
+
+    function setupSpeakingAnalyser(key, stream) {
+      cleanupSpeakingAnalyser(key);
+      if (!stream || stream.getAudioTracks().length === 0) return;
+      if (!state.audioCtx) return; // Created after user gesture to avoid iOS audio glitches
+      try {
+        if (state.audioCtx.state === 'suspended') state.audioCtx.resume().catch(() => {});
+        const source = state.audioCtx.createMediaStreamSource(stream);
+        const analyser = state.audioCtx.createAnalyser();
+        analyser.fftSize = 64;
+        source.connect(analyser);
+        state.analysers.set(key, {
+          source,
+          analyser,
+          data: new Uint8Array(analyser.frequencyBinCount)
+        });
+      } catch {}
+    }
+
+    function startSpeakingLoop() {
+      clearInterval(state.speakingTimer);
+      state.speakingTimer = setInterval(() => {
+        for (const [key, item] of state.analysers.entries()) {
+          if (key === 'self' && !state.micOn) {
+            if (state.screen === 'lobby') els.lobbyMicBtn.classList.remove('mic-live-ring');
+            const selfTile = document.querySelector('[data-peer-tile="self"]');
+            if (selfTile) selfTile.classList.remove('speaking');
+            continue;
+          }
+
+          const peer = key !== 'self' ? state.peers.get(key) : null;
+          if (peer && !peer.micOn) {
+            const tile = document.querySelector(`[data-peer-tile="${key}"]`);
+            if (tile) tile.classList.remove('speaking');
+            continue;
+          }
+
+          item.analyser.getByteFrequencyData(item.data);
+          let sum = 0;
+          for (let i = 0; i < item.data.length; i++) sum += item.data[i];
+          const avg = sum / item.data.length;
+          const talking = avg > 14;
+
+          if (state.screen === 'lobby' && key === 'self') {
+            els.lobbyMicBtn.classList.toggle('mic-live-ring', talking);
+          } else if (state.screen === 'call') {
+            const tile = document.querySelector(`[data-peer-tile="${key}"]`);
+            if (tile) tile.classList.toggle('speaking', talking);
+          }
+        }
+      }, 250);
+    }
+
+    // ==================== ADAPTIVE QUALITY ENGINE (NO UNNECESSARY RE-CONFIG) ====================
+    function startAdaptiveQualityEngine() {
+      clearInterval(state.adaptInterval);
+      applyAdaptiveVideoQuality();
+      state.adaptInterval = setInterval(applyAdaptiveVideoQuality, 4000);
+    }
+
+    async function applyAdaptiveVideoQuality() {
+      if (!state.room || !state.inCall) return;
+
+      let targetTier = 720;
+      const peerMap = state.room.getPeers ? state.room.getPeers() : {};
+      const connections = Object.values(peerMap);
+      const remoteCount = getActiveRemotePeers().length;
+
+      if (state.qualityMode !== 'auto') {
+        targetTier = Number(state.qualityMode) || 720;
+      } else {
+        if (remoteCount <= 1) targetTier = 1080;
+        else if (remoteCount <= 3) targetTier = 720;
+        else if (remoteCount <= 6) targetTier = 480;
+        else targetTier = 360;
+
+        let congested = false;
+        let severe = false;
+        for (const pc of connections) {
+          if (!pc || typeof pc.getStats !== 'function') continue;
+          try {
+            const stats = await pc.getStats();
+            stats.forEach(report => {
+              if (report.type === 'outbound-rtp' && report.kind === 'video') {
+                if (report.qualityLimitationReason === 'bandwidth') congested = true;
+              }
+              if (report.type === 'remote-inbound-rtp' && report.kind === 'video') {
+                if (report.fractionLost > 0.09) severe = true;
+                else if (report.fractionLost > 0.035) congested = true;
+              }
+            });
+          } catch {}
+        }
+
+        if (severe) targetTier = Math.min(targetTier, 360);
+        else if (congested) targetTier = Math.min(targetTier, 480);
+      }
+
+      state.currentAutoTier = targetTier;
+      const profile = QUALITY_PROFILES[targetTier] || QUALITY_PROFILES[720];
+
+      // Auto-reduce framerate in large group calls to save CPU & battery
+      let effectiveFps = state.targetFps || 30;
+      if (state.qualityMode === 'auto') {
+        if (remoteCount >= 6) effectiveFps = Math.min(effectiveFps, 20);
+        else if (remoteCount >= 3) effectiveFps = Math.min(effectiveFps, 24);
+      }
+
+      syncMenuLabels();
+
+      const videoSig = `${targetTier}|${effectiveFps}`;
+      for (const pc of connections) {
+        if (!pc || typeof pc.getSenders !== 'function') continue;
+        for (const sender of pc.getSenders()) {
+          if (!sender.track) continue;
+          if (sender.track.kind === 'video') {
+            state.knownVideoSenders.add(sender);
+            if (state.appliedEncoderConfig.get(sender) === videoSig) continue; // Cache hit: skip!
+            try {
+              const params = sender.getParameters();
+              if (!params.encodings || params.encodings.length === 0) params.encodings = [{}];
+              params.degradationPreference = 'maintain-framerate';
+              params.encodings[0].scaleResolutionDownBy = profile.scaleDown;
+              params.encodings[0].maxBitrate = profile.maxBitrate;
+              params.encodings[0].maxFramerate = effectiveFps;
+              await sender.setParameters(params);
+              state.appliedEncoderConfig.set(sender, videoSig);
+            } catch {}
+          } else if (sender.track.kind === 'audio') {
+            if (state.appliedEncoderConfig.get(sender) === 'audio-high') continue;
+            try {
+              const params = sender.getParameters();
+              if (!params.encodings || params.encodings.length === 0) params.encodings = [{}];
+              params.encodings[0].networkPriority = 'high';
+              await sender.setParameters(params);
+              state.appliedEncoderConfig.set(sender, 'audio-high');
+            } catch {}
+          }
+        }
+      }
+    }
+
+    // ==================== CHAT, FULLSCREEN CHAT, REPLY & 1:1 PHOTOS ====================
+    function clearChatHistory() {
+      for (const url of state.blobUrls) {
+        try { URL.revokeObjectURL(url); } catch {}
+      }
+      state.blobUrls.clear();
+      state.chatHistoryMap.clear();
+      clearReplyTarget();
+      clearPendingPhoto();
+
+      els.chatMessages.innerHTML = '';
+      els.chatMessages.appendChild(els.chatEmptyHint);
+      els.chatEmptyHint.classList.remove('hidden');
+      state.unreadChat = 0;
+      updateChatUnreadUI();
+    }
+
+    function setChatOpen(open) {
+      state.chatOpen = open;
+      els.chatPanel.classList.toggle('hidden', !open);
+      els.chatCollapsedPill.classList.toggle('hidden', open);
+      els.callChatToggleBtn.classList.toggle('active', open);
+      if (!open) {
+        setChatFullscreen(false);
+        resetIdleTimer();
+      } else {
+        closeSideMenu();
+        state.unreadChat = 0;
+        updateChatUnreadUI();
+        els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
+        els.chatInput.focus();
+      }
+    }
+
+    function setChatFullscreen(fs) {
+      state.chatFullscreen = fs;
+      els.chatWidget.classList.toggle('chat-fullscreen', fs);
+      els.chatFsExpandIcon.classList.toggle('hidden', fs);
+      els.chatFsShrinkIcon.classList.toggle('hidden', !fs);
+      els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
+    }
+
+    function updateChatUnreadUI() {
+      const count = state.unreadChat;
+      const label = count > 9 ? '9+' : String(count);
+      els.chatUnreadPill.textContent = label;
+      els.chatUnreadPill.classList.toggle('hidden', count === 0);
+      els.dockChatBadge.textContent = label;
+      els.dockChatBadge.classList.toggle('hidden', count === 0);
+    }
+
+    function updateSendButtonState() {
+      const hasText = Boolean(els.chatInput.value.trim());
+      const hasPhoto = Boolean(state.pendingPhoto);
+      els.chatSendBtn.disabled = !(hasText || hasPhoto);
+    }
+
+    function setReplyTarget(msgObj) {
+      if (!msgObj) return;
+      state.replyTarget = {
+        id: msgObj.id,
+        sender: msgObj.sender,
+        text: msgObj.isPhoto ? (msgObj.caption ? `📷 ${msgObj.caption}` : '📷 Фото') : msgObj.text,
+        thumbUrl: msgObj.url || null
+      };
+      els.chatReplyTitle.textContent = `Ответ: ${state.replyTarget.sender}`;
+      els.chatReplyText.textContent = state.replyTarget.text;
+      els.chatReplyBar.classList.remove('hidden');
+      if (!state.chatOpen) setChatOpen(true);
+      els.chatInput.focus();
+    }
+
+    function clearReplyTarget() {
+      state.replyTarget = null;
+      els.chatReplyBar.classList.add('hidden');
+    }
+
+    function setPendingPhoto(file) {
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        showToast('Можно отправлять только изображения');
+        return;
+      }
+      if (file.size > MAX_PHOTO_BYTES) {
+        showToast(`Фото больше 20 МБ (${formatBytes(file.size)})`);
+        return;
+      }
+      clearPendingPhoto();
+      const url = registerBlobUrl(URL.createObjectURL(file));
+      state.pendingPhoto = {
+        file,
+        url,
+        name: file.name || `photo-${Date.now()}.jpg`,
+        size: file.size,
+        mime: file.type || 'image/jpeg'
+      };
+      els.chatPhotoThumb.src = url;
+      els.chatPhotoName.textContent = state.pendingPhoto.name;
+      els.chatPhotoSize.textContent = `Оригинал 1:1 · ${formatBytes(file.size)}`;
+      els.chatPhotoPreview.classList.remove('hidden');
+      if (!state.chatOpen) setChatOpen(true);
+      updateSendButtonState();
+      els.chatInput.focus();
+    }
+
+    function clearPendingPhoto() {
+      state.pendingPhoto = null;
+      els.chatPhotoPreview.classList.add('hidden');
+      els.chatPhotoThumb.removeAttribute('src');
+      els.chatFileInput.value = '';
+      updateSendButtonState();
+    }
+
+    function buildQuoteElement(replyTo) {
+      if (!replyTo || !replyTo.sender) return null;
+      const quote = document.createElement('div');
+      quote.className = 'chat-quote';
+      const body = document.createElement('div');
+      body.className = 'chat-quote-body';
+      const s = document.createElement('span');
+      s.className = 'chat-quote-sender';
+      s.textContent = replyTo.sender;
+      const t = document.createElement('span');
+      t.className = 'chat-quote-text';
+      t.textContent = replyTo.text || '';
+      body.appendChild(s);
+      body.appendChild(t);
+      quote.appendChild(body);
+
+      quote.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const ref = replyTo.id && state.chatHistoryMap.get(replyTo.id);
+        if (ref && ref.el) {
+          ref.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          ref.el.classList.add('msg-highlight');
+          setTimeout(() => ref.el.classList.remove('msg-highlight'), 1400);
+        }
+      });
+      return quote;
+    }
+
+    function appendSystemChat(text) {
+      els.chatEmptyHint.classList.add('hidden');
+      const div = document.createElement('div');
+      div.className = 'chat-sys';
+      div.textContent = text;
+      els.chatMessages.appendChild(div);
+      els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
+    }
+
+    function appendChatMessage(msg) {
+      els.chatEmptyHint.classList.add('hidden');
+      const timeStr = new Date(msg.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const wrap = document.createElement('div');
+      wrap.className = `chat-msg ${msg.mine ? 'mine' : ''}`;
+      wrap.dataset.msgId = msg.id;
+
+      const meta = document.createElement('div');
+      meta.className = 'chat-msg-meta';
+      meta.textContent = msg.mine ? timeStr : `${msg.sender} · ${timeStr}`;
+
+      const bubble = document.createElement('div');
+      bubble.className = 'chat-msg-bubble';
+      bubble.title = 'Нажмите, чтобы ответить';
+
+      if (msg.replyTo) {
+        const q = buildQuoteElement(msg.replyTo);
+        if (q) bubble.appendChild(q);
+      }
+
+      const txtNode = document.createElement('span');
+      txtNode.textContent = msg.text;
+      bubble.appendChild(txtNode);
+
+      bubble.addEventListener('click', () => setReplyTarget(msg));
+
+      wrap.appendChild(meta);
+      wrap.appendChild(bubble);
+      els.chatMessages.appendChild(wrap);
+      els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
+
+      state.chatHistoryMap.set(msg.id, { el: wrap, msg });
+
+      if (!msg.mine) {
+        if (!state.chatOpen) {
+          state.unreadChat += 1;
+          updateChatUnreadUI();
+        }
+        playChime('msg');
+        const snippet = msg.text.length > 30 ? msg.text.slice(0, 30) + '...' : msg.text;
+        showToast(`${msg.sender}: ${snippet}`, 2800);
+      }
+    }
+
+    function ensurePhotoPlaceholder(msg, pct) {
+      els.chatEmptyHint.classList.add('hidden');
+      let entry = state.chatHistoryMap.get(msg.id);
+      if (!entry) {
+        const timeStr = new Date(msg.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const wrap = document.createElement('div');
+        wrap.className = `chat-msg ${msg.mine ? 'mine' : ''}`;
+        wrap.dataset.msgId = msg.id;
+
+        const meta = document.createElement('div');
+        meta.className = 'chat-msg-meta';
+        meta.textContent = msg.mine ? timeStr : `${msg.sender} · ${timeStr}`;
+
+        const bubble = document.createElement('div');
+        bubble.className = 'chat-msg-bubble has-photo';
+
+        if (msg.replyTo) {
+          const q = buildQuoteElement(msg.replyTo);
+          if (q) bubble.appendChild(q);
+        }
+
+        const photoWrap = document.createElement('div');
+        photoWrap.className = 'chat-photo-wrap';
+
+        const img = document.createElement('img');
+        img.className = 'chat-photo-img';
+        if (msg.url) img.src = msg.url;
+
+        const prog = document.createElement('div');
+        prog.className = 'chat-photo-progress';
+        prog.textContent = `${msg.mine ? 'Отправка' : 'Загрузка'} ${pct}%`;
+
+        const replyBtn = document.createElement('button');
+        replyBtn.type = 'button';
+        replyBtn.className = 'chat-photo-reply-btn';
+        replyBtn.title = 'Ответить на фото';
+        replyBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"></polyline><path d="M20 20v-7a4 4 0 0 0-4-4H4"></path></svg>`;
+
+        photoWrap.appendChild(img);
+        photoWrap.appendChild(prog);
+        photoWrap.appendChild(replyBtn);
+        bubble.appendChild(photoWrap);
+
+        if (msg.caption) {
+          const cap = document.createElement('div');
+          cap.className = 'chat-photo-caption';
+          cap.textContent = msg.caption;
+          bubble.appendChild(cap);
+        }
+
+        wrap.appendChild(meta);
+        wrap.appendChild(bubble);
+        els.chatMessages.appendChild(wrap);
+        els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
+
+        entry = { el: wrap, msg: { ...msg, isPhoto: true } };
+        state.chatHistoryMap.set(msg.id, entry);
+      } else {
+        const prog = entry.el.querySelector('.chat-photo-progress');
+        if (prog) prog.textContent = `${msg.mine ? 'Отправка' : 'Загрузка'} ${pct}%`;
+      }
+    }
+
+    function finalizePhotoMessage(msg) {
+      ensurePhotoPlaceholder(msg, 100);
+      const entry = state.chatHistoryMap.get(msg.id);
+      if (!entry) return;
+      entry.msg = { ...msg, isPhoto: true };
+
+      const img = entry.el.querySelector('.chat-photo-img');
+      const prog = entry.el.querySelector('.chat-photo-progress');
+      const photoWrap = entry.el.querySelector('.chat-photo-wrap');
+      const replyBtn = entry.el.querySelector('.chat-photo-reply-btn');
+      const cap = entry.el.querySelector('.chat-photo-caption');
+
+      if (img && msg.url) img.src = msg.url;
+      if (prog) prog.remove();
+
+      if (photoWrap) {
+        photoWrap.onclick = () => openLightbox({
+          url: msg.url,
+          name: msg.fileName || 'photo.jpg',
+          msgId: msg.id,
+          sender: msg.sender,
+          msgObj: entry.msg
+        });
+      }
+      if (replyBtn) {
+        replyBtn.onclick = (e) => {
+          e.stopPropagation();
+          setReplyTarget(entry.msg);
+        };
+      }
+      if (cap) {
+        cap.onclick = () => setReplyTarget(entry.msg);
+      }
+
+      if (!msg.mine) {
+        if (!state.chatOpen) {
+          state.unreadChat += 1;
+          updateChatUnreadUI();
+        }
+        playChime('msg');
+        showToast(`${msg.sender} отправил(а) фото`, 2800);
+      }
+      els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
+    }
+
+    function openLightbox(data) {
+      if (!data || !data.url) return;
+      state.lightboxData = data;
+      els.lightboxImg.src = data.url;
+      els.lightboxMeta.textContent = `${data.sender} · ${data.name}`;
+      els.photoLightbox.classList.remove('hidden');
+    }
+
+    function closeLightbox() {
+      state.lightboxData = null;
+      els.photoLightbox.classList.add('hidden');
+      els.lightboxImg.removeAttribute('src');
+    }
+
+    // ==================== DEVICE SELECTION ====================
+    async function openDevicesModal() {
+      closeSideMenu();
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const mics = devices.filter(d => d.kind === 'audioinput');
+        const cams = devices.filter(d => d.kind === 'videoinput');
+
+        els.micSelect.innerHTML = '';
+        mics.forEach((m, idx) => {
+          const opt = document.createElement('option');
+          opt.value = m.deviceId;
+          opt.textContent = m.label || `Микрофон ${idx + 1}`;
+          if (m.deviceId === state.selectedMicId) opt.selected = true;
+          els.micSelect.appendChild(opt);
+        });
+        if (mics.length === 0) els.micSelect.innerHTML = '<option value="">Нет доступных микрофонов</option>';
+
+        els.camSelect.innerHTML = '';
+        cams.forEach((c, idx) => {
+          const opt = document.createElement('option');
+          opt.value = c.deviceId;
+          opt.textContent = c.label || `Камера ${idx + 1}`;
+          if (c.deviceId === state.selectedCamId) opt.selected = true;
+          els.camSelect.appendChild(opt);
+        });
+        if (cams.length === 0) els.camSelect.innerHTML = '<option value="">Нет доступных камер</option>';
+
+        els.devicesModal.classList.remove('hidden');
+      } catch {
+        showToast('Не удалось получить список устройств');
+      }
+    }
+
+    async function applySelectedDevices() {
+      const nextMic = els.micSelect.value;
+      const nextCam = els.camSelect.value;
+      els.devicesModal.classList.add('hidden');
+
+      if (nextMic && nextMic !== state.selectedMicId) {
+        state.selectedMicId = nextMic;
+        try {
+          const s = await navigator.mediaDevices.getUserMedia({
+            audio: { deviceId: { exact: nextMic }, echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+          });
+          const newAudio = s.getAudioTracks()[0];
+          const oldAudio = state.localStream.getAudioTracks()[0];
+          newAudio.enabled = state.micOn;
+          if (oldAudio) { oldAudio.stop(); state.localStream.removeTrack(oldAudio); }
+          state.localStream.addTrack(newAudio);
+
+          if (state.room && state.inCall) {
+            for (const pc of Object.values(state.room.getPeers())) {
+              const sender = pc.getSenders().find(sd => sd.track && sd.track.kind === 'audio');
+              if (sender) await sender.replaceTrack(newAudio).catch(() => {});
+            }
+          }
+          setupSpeakingAnalyser('self', state.localStream);
+        } catch {
+          showToast('Не удалось сменить микрофон');
+        }
+      }
+
+      if (nextCam && nextCam !== state.selectedCamId) {
+        state.selectedCamId = nextCam;
+        if (state.camOn) {
+          try {
+            const newCam = await getNewVideoTrack();
+            const oldCam = state.localStream.getVideoTracks()[0];
+            if (oldCam) { oldCam.stop(); state.localStream.removeTrack(oldCam); }
+            state.localStream.addTrack(newCam);
+            await replaceOutgoingVideoTrack(newCam);
+            renderVideoStage();
+          } catch {
+            showToast('Не удалось сменить камеру');
+          }
+        }
+      }
+      showToast('Устройства обновлены');
+    }
+
+    // ==================== EVENT WIRING ====================
+    renderThemeSwatches(els.homeThemeRow);
+    renderThemeSwatches(els.menuThemeRow);
+    renderThemeSwatches(els.lobbyThemeRow);
+    applyTheme(state.theme);
+
+    function syncLobbyMenuUI() {
+      els.lobbyMenuMirrorVal.textContent = state.mirrorCam ? 'Вкл' : 'Выкл';
+      try {
+        const saved = JSON.parse(localStorage.getItem('picnic_turn') || 'null');
+        const hasTurn = Boolean((saved && saved.url) || state.urlTurn);
+        els.lobbyMenuNetVal.textContent = hasTurn ? 'TURN' : 'Авто';
+      } catch {
+        els.lobbyMenuNetVal.textContent = 'Авто';
+      }
+    }
+
+    els.createRoomBtn.addEventListener('click', (e) => {
+      if (e) e.preventDefault();
+      openLobby(generateRoomId(), true);
+    });
+
+    els.joinCodeBtn.addEventListener('click', () => {
+      const code = parseRoomFromInput(els.joinCodeInput.value);
+      if (!code) {
+        els.joinCodeInput.classList.remove('input-shake');
+        void els.joinCodeInput.offsetWidth;
+        els.joinCodeInput.classList.add('input-shake');
+        showToast('Вставьте корректную ссылку или код');
+        return;
+      }
+      openLobby(code, false);
+    });
+
+    els.joinCodeInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') els.joinCodeBtn.click();
+    });
+
+    els.lobbyBackBtn.addEventListener('click', () => teardownCallAndGoHome(true));
+    els.lobbyMicBtn.addEventListener('click', toggleMic);
+    els.lobbyCamBtn.addEventListener('click', toggleCam);
+    els.lobbyFlipBtn.addEventListener('click', flipCamera);
+    els.userNameInput.addEventListener('input', () => {
+      els.lobbyAvatar.textContent = firstLetter(els.userNameInput.value || 'Я');
+    });
+    els.userNameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !els.enterCallBtn.disabled) enterCall();
+    });
+
+    els.enterCallBtn.addEventListener('click', enterCall);
+    els.lobbyRetryBtn.addEventListener('click', startGuestRoomCheck);
+    els.lobbyCreateNewBtn.addEventListener('click', async () => {
+      await disconnectRoomChannel();
+      openLobby(generateRoomId(), true);
+    });
+
+    // QR Share Modal & QR Scanner
+    async function openShareModal() {
+      closeSideMenu();
+      els.lobbyMenu.classList.add('hidden');
+      state.lobbyMenuOpen = false;
+      const url = getInviteUrl();
+      els.shareUrlInput.value = url;
+      els.shareModal.classList.remove('hidden');
+      try {
+        const { default: QRCode } = await import('https://esm.sh/qrcode@1.5.4');
+        await QRCode.toCanvas(els.shareQrCanvas, url, {
+          width: 208,
+          margin: 2,
+          color: { dark: '#08080A', light: '#FFFFFF' }
+        });
+      } catch {
+        showToast('Не удалось нарисовать QR-код');
+      }
+    }
+
+    async function openQrScanner() {
+      els.qrScannerModal.classList.remove('hidden');
+      els.qrScanHint.textContent = 'Включаем камеру...';
+      try {
+        state.qrScanStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' }
+        });
+        els.qrScanVideo.srcObject = state.qrScanStream;
+        await els.qrScanVideo.play().catch(() => {});
+        els.qrScanHint.textContent = 'Наведите камеру на QR-код приглашения';
+
+        let detector = null;
+        if ('BarcodeDetector' in window) {
+          try { detector = new window.BarcodeDetector({ formats: ['qr_code'] }); } catch {}
+        }
+        let jsQR = null;
+        if (!detector) {
+          try { jsQR = (await import('https://esm.sh/jsqr@1.4.0')).default; } catch {}
+        }
+
+        const scanFrame = async () => {
+          if (els.qrScannerModal.classList.contains('hidden')) return;
+          const v = els.qrScanVideo;
+          if (v.readyState >= 2 && v.videoWidth > 0) {
+            let foundText = '';
+            if (detector) {
+              try {
+                const res = await detector.detect(v);
+                if (res && res[0]) foundText = res[0].rawValue || '';
+              } catch {}
+            } else if (jsQR) {
+              const c = els.qrScanCanvas;
+              c.width = v.videoWidth;
+              c.height = v.videoHeight;
+              const ctx = c.getContext('2d', { willReadFrequently: true });
+              ctx.drawImage(v, 0, 0, c.width, c.height);
+              const imgData = ctx.getImageData(0, 0, c.width, c.height);
+              const qr = jsQR(imgData.data, c.width, c.height);
+              if (qr && qr.data) foundText = qr.data;
+            }
+            if (foundText) {
+              const code = parseRoomFromInput(foundText);
+              if (code) {
+                closeQrScanner();
+                openLobby(code, false);
+                return;
+              }
+            }
+          }
+          state.qrScanTimer = setTimeout(scanFrame, 260);
+        };
+        scanFrame();
+      } catch {
+        els.qrScanHint.textContent = 'Нет доступа к камере для сканирования';
+      }
+    }
+
+    function closeQrScanner() {
+      clearTimeout(state.qrScanTimer);
+      if (state.qrScanStream) {
+        state.qrScanStream.getTracks().forEach(t => t.stop());
+        state.qrScanStream = null;
+      }
+      els.qrScanVideo.srcObject = null;
+      els.qrScannerModal.classList.add('hidden');
+    }
+
+    els.scanQrBtn.addEventListener('click', openQrScanner);
+    els.closeQrScannerBtn.addEventListener('click', closeQrScanner);
+    els.lobbyShareBtn.addEventListener('click', openShareModal);
+    els.lobbyRecheckBtn.addEventListener('click', () => {
+      reconnectRoomIfNeeded();
+      startGuestRoomCheck();
+    });
+
+    els.lobbyMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      state.lobbyMenuOpen = !state.lobbyMenuOpen;
+      syncLobbyMenuUI();
+      els.lobbyMenu.classList.toggle('hidden', !state.lobbyMenuOpen);
+    });
+    els.lobbyMenuDevicesBtn.addEventListener('click', () => {
+      state.lobbyMenuOpen = false;
+      els.lobbyMenu.classList.add('hidden');
+      openDevicesModal();
+    });
+    els.lobbyMenuMirrorBtn.addEventListener('click', () => {
+      state.mirrorCam = !state.mirrorCam;
+      updateLobbyPreviewUI();
+      syncLobbyMenuUI();
+    });
+    els.lobbyMenuNetBtn.addEventListener('click', () => {
+      state.lobbyMenuOpen = false;
+      els.lobbyMenu.classList.add('hidden');
+      els.openNetSettingsBtn.click();
+    });
+
+    els.shareCopyBtn.addEventListener('click', () => copyToClipboard(els.shareUrlInput.value));
+    els.shareNativeBtn.addEventListener('click', shareOrCopyInvite);
+    els.shareDownloadQrBtn.addEventListener('click', () => {
+      const a = document.createElement('a');
+      a.href = els.shareQrCanvas.toDataURL('image/png');
+      a.download = `picnic-${state.roomId || 'invite'}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
+    els.closeShareModalBtn.addEventListener('click', () => els.shareModal.classList.add('hidden'));
+
+    // Top bar & Hamburger Menu
+    els.shareInviteBtn.addEventListener('click', openShareModal);
+    els.waitingCopyBtn.addEventListener('click', openShareModal);
+    els.menuToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleSideMenu();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (state.menuOpen && !els.sideMenu.contains(e.target) && !els.menuToggleBtn.contains(e.target)) {
+        closeSideMenu();
+      }
+      if (state.lobbyMenuOpen && !els.lobbyMenu.contains(e.target) && !els.lobbyMenuBtn.contains(e.target)) {
+        state.lobbyMenuOpen = false;
+        els.lobbyMenu.classList.add('hidden');
+      }
+    });
+
+    els.menuLayoutBtn.addEventListener('click', () => {
+      if (state.pinnedPeerId) {
+        state.pinnedPeerId = null;
+        state.forceGridLayout = true;
+      } else {
+        state.forceGridLayout = !state.forceGridLayout;
+      }
+      renderVideoStage();
+      showToast(state.forceGridLayout ? 'Раскладка: Сетка' : 'Раскладка: Фокус');
+      closeSideMenu();
+    });
+
+    els.menuFitBtn.addEventListener('click', () => {
+      state.containFit = !state.containFit;
+      document.querySelectorAll('#videoStage .video-tile').forEach(t => {
+        t.classList.toggle('contain-fit', state.containFit);
+      });
+      syncMenuLabels();
+      showToast(state.containFit ? 'Кадр: Целиком' : 'Кадр: Заполнить');
+      closeSideMenu();
+    });
+
+    els.menuFsBtn.addEventListener('click', toggleFullscreen);
+
+    els.menuQualityBtn.addEventListener('click', () => {
+      closeSideMenu();
+      els.callQualitySelect.value = state.qualityMode;
+      els.callFpsSelect.value = String(state.targetFps);
+      els.qualityModal.classList.remove('hidden');
+    });
+
+    els.menuDevicesBtn.addEventListener('click', openDevicesModal);
+
+    // Bottom Dock & Collapse
+    els.callMicBtn.addEventListener('click', toggleMic);
+    els.callCamBtn.addEventListener('click', toggleCam);
+    els.callFlipBtn.addEventListener('click', flipCamera);
+    els.collapseDockBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setDockCollapsed(true);
+    });
+    els.dockRestoreBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setDockCollapsed(false);
+    });
+
+    // Tap empty background in call restores dock / UI
+    els.callScreen.addEventListener('click', () => {
+      if (state.dockCollapsed) setDockCollapsed(false);
+      resetIdleTimer();
+    });
+
+    // Quality Modal
+    els.closeQualityModalBtn.addEventListener('click', async () => {
+      state.qualityMode = els.callQualitySelect.value;
+      const nextFps = Number(els.callFpsSelect.value) || 30;
+      const fpsChanged = nextFps !== state.targetFps;
+      state.targetFps = nextFps;
+      els.qualityModal.classList.add('hidden');
+
+      if (fpsChanged && state.camOn && state.localStream) {
+        const vTrack = state.localStream.getVideoTracks()[0];
+        if (vTrack && vTrack.applyConstraints) {
+          try {
+            await vTrack.applyConstraints(getDesiredVideoConstraints());
+            showToast(`Настройки применены (${state.targetFps} FPS)`);
+          } catch {
+            state.targetFps = 30;
+            showToast('Камера поддерживает до 30 FPS');
+          }
+        }
+      }
+      state.appliedEncoderConfig = new WeakMap();
+      applyAdaptiveVideoQuality();
+    });
+
+    // Devices Modal
+    els.applyDevicesBtn.addEventListener('click', applySelectedDevices);
+    els.closeDevicesModalBtn.addEventListener('click', () => els.devicesModal.classList.add('hidden'));
+
+    // Chat Events
+    els.chatCollapsedPill.addEventListener('click', () => setChatOpen(true));
+    els.chatMinimizeBtn.addEventListener('click', () => setChatOpen(false));
+    els.chatFullscreenBtn.addEventListener('click', () => setChatFullscreen(!state.chatFullscreen));
+    els.callChatToggleBtn.addEventListener('click', () => setChatOpen(!state.chatOpen));
+
+    els.chatReplyCancel.addEventListener('click', clearReplyTarget);
+    els.chatPhotoCancel.addEventListener('click', clearPendingPhoto);
+    els.chatAttachBtn.addEventListener('click', () => els.chatFileInput.click());
+
+    els.chatFileInput.addEventListener('change', () => {
+      const file = els.chatFileInput.files && els.chatFileInput.files[0];
+      if (file) setPendingPhoto(file);
+    });
+
+    // Paste image from clipboard directly into chat
+    els.chatInput.addEventListener('paste', (e) => {
+      const items = e.clipboardData && e.clipboardData.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          const f = item.getAsFile();
+          if (f) {
+            e.preventDefault();
+            setPendingPhoto(f);
+            break;
+          }
+        }
+      }
+    });
+
+    els.chatInput.addEventListener('input', updateSendButtonState);
+
+    els.chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!state.actions) return;
+
+      const text = els.chatInput.value.trim();
+      const pending = state.pendingPhoto;
+      const replyData = state.replyTarget ? {
+        id: state.replyTarget.id,
+        sender: state.replyTarget.sender,
+        text: state.replyTarget.text
+      } : null;
+
+      if (!text && !pending) return;
+
+      // Send Photo 1:1 original via binary channel
+      if (pending) {
+        const msgId = generateMsgId();
+        const ts = Date.now();
+        const meta = {
+          msgId,
+          sender: state.myName,
+          fileName: pending.name,
+          mime: pending.mime,
+          caption: text,
+          replyTo: replyData,
+          ts
+        };
+
+        const localPhotoMsg = {
+          id: msgId,
+          mine: true,
+          sender: state.myName,
+          url: pending.url,
+          fileName: pending.name,
+          caption: text,
+          replyTo: replyData,
+          ts
+        };
+
+        clearPendingPhoto();
+        clearReplyTarget();
+        els.chatInput.value = '';
+        updateSendButtonState();
+
+        const hasPeers = state.room && Object.keys(state.room.getPeers()).length > 0;
+        if (hasPeers) {
+          ensurePhotoPlaceholder(localPhotoMsg, 0);
+          try {
+            const buf = await pending.file.arrayBuffer();
+            await state.actions.photoAct.send(buf, {
+              metadata: meta,
+              onProgress: (pct) => ensurePhotoPlaceholder(localPhotoMsg, Math.round(pct * 100))
+            });
+          } catch {
+            showToast('Ошибка при отправке фото');
+          }
+        }
+        finalizePhotoMessage(localPhotoMsg);
+        return;
+      }
+
+      // Send Text Message
+      const msgId = generateMsgId();
+      const ts = Date.now();
+      try {
+        state.actions.chatAct.send({
+          id: msgId,
+          text,
+          sender: state.myName,
+          replyTo: replyData,
+          ts
+        });
+      } catch {}
+
+      appendChatMessage({
+        id: msgId,
+        mine: true,
+        sender: state.myName,
+        text,
+        replyTo: replyData,
+        ts
+      });
+
+      clearReplyTarget();
+      els.chatInput.value = '';
+      updateSendButtonState();
+    });
+
+    // Lightbox Events
+    els.lightboxCloseBtn.addEventListener('click', closeLightbox);
+    els.lightboxStage.addEventListener('click', (e) => {
+      if (e.target === els.lightboxStage) closeLightbox();
+    });
+    els.lightboxDownloadBtn.addEventListener('click', () => {
+      if (!state.lightboxData) return;
+      const a = document.createElement('a');
+      a.href = state.lightboxData.url;
+      a.download = state.lightboxData.name || 'picnic-photo.jpg';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
+    els.lightboxReplyBtn.addEventListener('click', () => {
+      const d = state.lightboxData;
+      closeLightbox();
+      if (d && d.msgObj) setReplyTarget(d.msgObj);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !els.photoLightbox.classList.contains('hidden')) closeLightbox();
+    });
+
+    // Leave / End Call
+    els.leaveCallBtn.addEventListener('click', () => {
+      const isHostGroup = state.isHost && getActiveRemotePeers().length > 0;
+      els.endForAllBtn.classList.toggle('hidden', !isHostGroup);
+      const titleEl = els.leaveModal.querySelector('.modal-title');
+      const descEl = els.leaveModal.querySelector('.desc');
+      if (titleEl) titleEl.textContent = isHostGroup ? 'Завершить видеозвонок?' : 'Выйти из звонка?';
+      if (descEl) descEl.textContent = isHostGroup
+        ? 'Вы организатор этой встречи. Можно выйти самому или закрыть звонок сразу для всех.'
+        : 'Вы действительно хотите покинуть видеозвонок?';
+      els.leaveOnlyMeBtn.textContent = isHostGroup ? 'Выйти только мне' : 'Да, выйти';
+      els.leaveModal.classList.remove('hidden');
+    });
+
+    els.endForAllBtn.addEventListener('click', async () => {
+      if (state.actions) {
+        try { state.actions.ctrlAct.send({ type: 'end_all' }); } catch {}
+      }
+      await new Promise(r => setTimeout(r, 150));
+      await teardownCallAndGoHome(false);
+    });
+
+    els.leaveOnlyMeBtn.addEventListener('click', () => teardownCallAndGoHome(false));
+    els.cancelLeaveBtn.addEventListener('click', () => els.leaveModal.classList.add('hidden'));
+
+    // Network / TURN Modal
+    els.openNetSettingsBtn.addEventListener('click', () => {
+      try {
+        const saved = JSON.parse(localStorage.getItem('picnic_turn') || '{}');
+        els.turnUrlInput.value = saved.url || '';
+        els.turnUserInput.value = saved.user || '';
+        els.turnPassInput.value = saved.pass || '';
+        els.turnShareCheck.checked = Boolean(saved.shareInLink);
+      } catch {}
+      els.netModal.classList.remove('hidden');
+    });
+
+    els.saveNetBtn.addEventListener('click', async () => {
+      const url = els.turnUrlInput.value.trim();
+      const user = els.turnUserInput.value.trim();
+      const pass = els.turnPassInput.value.trim();
+      const shareInLink = Boolean(els.turnShareCheck.checked);
+      if (url) {
+        localStorage.setItem('picnic_turn', JSON.stringify({ url, user, pass, shareInLink }));
+        showToast('TURN-сервер сохранён');
+      } else {
+        localStorage.removeItem('picnic_turn');
+        showToast('Используется стандартное прямое подключение');
+      }
+      els.netModal.classList.add('hidden');
+      syncLobbyMenuUI();
+      if (state.screen === 'lobby' && state.roomId && !state.isHost) {
+        await reconnectRoomIfNeeded();
+        startGuestRoomCheck();
+      }
+    });
+    els.closeNetBtn.addEventListener('click', () => els.netModal.classList.add('hidden'));
+
+    function startBackgroundAudioKeepAlive() {
+      try {
+        if ('mediaSession' in navigator) {
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: 'Активный видеозвонок',
+            artist: 'Picnic',
+            album: state.roomId || 'Комната'
+          });
+          navigator.mediaSession.playbackState = 'playing';
+        }
+        if (state.audioCtx && !state.keepAliveNode) {
+          const osc = state.audioCtx.createOscillator();
+          const gain = state.audioCtx.createGain();
+          osc.frequency.value = 18;
+          gain.gain.value = 0.0001;
+          osc.connect(gain);
+          gain.connect(state.audioCtx.destination);
+          osc.start();
+          state.keepAliveNode = { osc, gain };
+        }
+      } catch {}
+    }
+
+    function stopBackgroundAudioKeepAlive() {
+      try {
+        if (state.keepAliveNode) {
+          state.keepAliveNode.osc.stop();
+          state.keepAliveNode.osc.disconnect();
+          state.keepAliveNode.gain.disconnect();
+          state.keepAliveNode = null;
+        }
+        if ('mediaSession' in navigator) {
+          navigator.mediaSession.playbackState = 'none';
+        }
+      } catch {}
+    }
+
+    async function reconnectRoomIfNeeded(force = false) {
+      if (!state.roomId || state.reconnectInFlight) return;
+      let anyRelayOpen = false;
+      try {
+        const sockets = getRelaySockets ? getRelaySockets() : {};
+        anyRelayOpen = Object.values(sockets).some(ws => ws && ws.readyState === 1);
+      } catch {}
+
+      if (!force && anyRelayOpen && state.room) return;
+
+      state.reconnectInFlight = true;
+      if (state.inCall) els.reconnectPill.classList.remove('hidden');
+      try {
+        if (state.room) {
+          try { await state.room.leave(); } catch {}
+          state.room = null;
+          state.actions = null;
+        }
+        connectRoomChannel(state.roomId);
+        if (state.inCall && state.localStream && state.localStream.getTracks().length > 0) {
+          try { state.room.addStream(state.localStream); } catch {}
+        }
+        broadcastMyState();
+      } finally {
+        state.reconnectInFlight = false;
+        setTimeout(() => els.reconnectPill.classList.add('hidden'), 1500);
+      }
+    }
+
+    // Background Focus Recovery & Minimized Status
+    async function recoverFromBackground() {
+      if (!state.inCall) return;
+      if (state.localMinimized) {
+        state.localMinimized = false;
+        broadcastMyState();
+      }
+      if (state.audioCtx && state.audioCtx.state === 'suspended') {
+        state.audioCtx.resume().catch(() => {});
+      }
+      document.querySelectorAll('#videoStage video').forEach(v => {
+        if (v.paused) v.play().catch(() => {});
+      });
+      requestWakeLock();
+      reconnectRoomIfNeeded(false);
+
+      const curTrack = state.localStream && state.localStream.getVideoTracks()[0];
+      if (state.camOn && (!curTrack || curTrack.readyState === 'ended')) {
+        try {
+          const freshTrack = await getNewVideoTrack();
+          if (curTrack) {
+            curTrack.stop();
+            state.localStream.removeTrack(curTrack);
+          }
+          state.localStream.addTrack(freshTrack);
+          await replaceOutgoingVideoTrack(freshTrack);
+          renderVideoStage();
+        } catch {}
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        if (state.inCall) {
+          state.localMinimized = true;
+          broadcastMyState();
+        }
+      } else if (document.visibilityState === 'visible') {
+        recoverFromBackground();
+      }
+    });
+    window.addEventListener('pageshow', recoverFromBackground);
+    window.addEventListener('focus', recoverFromBackground);
+    window.addEventListener('online', () => {
+      if (state.inCall || state.screen === 'lobby') reconnectRoomIfNeeded(true);
+    });
+
+    window.addEventListener('beforeunload', () => {
+      if (state.inCall && state.actions) {
+        try { state.actions.ctrlAct.send({ type: 'bye' }); } catch {}
+      }
+      if (state.room) {
+        try { state.room.leave(); } catch {}
+      }
+    });
+
+    // ==================== BOOT ====================
+    (function init() {
+      const turnFromUrl = extractTurnFromString(window.location.hash || window.location.search);
+      if (turnFromUrl) state.urlTurn = turnFromUrl;
+      const hashCode = parseRoomFromInput(window.location.hash);
+      if (hashCode) {
+        openLobby(hashCode, false);
+      } else {
+        setScreen('home');
+      }
+    })();
+  </script>
+</body>
+  </html>
